@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from skimage import io, transform, img_as_ubyte, img_as_float
 
-# Numerical path segment tags
+# Numerical path segment labels
 WINTER_HOME = 0
 SUMMER_HOME = 1
 MIGRATING = 2
@@ -31,19 +31,26 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         return len(self.paths_df)
 
     def get_val(self, row, column_name):
+        """
+        Return a single column value from the provided row
+        """
         idx = self.paths_df.columns.get_loc(column_name)
         return self.paths_df.iloc[row, idx]
 
     def get_time_features(self, dt):
+        """
+        Return vector of numerical time features:
+        integers for date values, and float for Unix time
+        """
         dt = pd.to_datetime(dt)
-        t = dt.timestamp()
-        date = dt.date()
-        y = pd.to_datetime(t).date().year
-        m = pd.to_datetime(t).date().month
-        d = pd.to_datetime(t).date().day
-        return [y, m, d, t]
+        d = dt.date()
+        return [d.year, d.month, d.day, dt.timestamp()]
 
     def convert_id_to_num(self, ident):
+        """
+        Convert from an individual animal's identifier
+        string to an integer feature value
+        """
         if ident in self.individuals:
             # retrieve zero-indexed identifier
             return self.individuals[ident]
@@ -70,6 +77,10 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
             return MIGRATING
 
     def __getitem__(self, row):
+        """
+        Build the features vector and label
+        for the provided data row
+        """
         if torch.is_tensor(row):
             row = row.tolist()
         # Get the geo-location data
@@ -98,7 +109,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
 
 
 class ToTensor(object):
-    """Convert ndarrays in sample to Tensors."""
+    """Convert ndarrays in sample to Tensors"""
 
     def __call__(self, sample):
         features, label = sample["features"], sample["label"]
