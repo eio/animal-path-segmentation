@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from animal_data_loaders import build_data_loaders
 
 # RNN: https://pytorch.org/docs/stable/generated/torch.nn.RNN.html
 rnn = nn.RNN(10, 20, 2)
