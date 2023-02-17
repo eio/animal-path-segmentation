@@ -10,6 +10,15 @@ from skimage import io, transform, img_as_ubyte, img_as_float
 WINTER_HOME = 0
 SUMMER_HOME = 1
 MIGRATING = 2
+# Keep track of all possible categories
+ALL_CATEGORIES = [WINTER_HOME, SUMMER_HOME, MIGRATING]
+# Define strings for the column/feature names used
+IDENTIFIER = "individual-local-identifier"  # +1 feature
+LATITUDE = "location-lat"  # +1 feature
+LONGITUDE = "location-long"  # +1 feature
+TIMESTAMP = "timestamp"  # # +4 features (year, month, day, unixtime)
+# Keep track of total number of input features
+N_FEATURES = 7
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -18,11 +27,20 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
     def __init__(self, csv_file, transform=None):
         """
         Args:
-            csv_file (string): Path to the csv file with path segment annotations.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+            csv_file (string):
+                - Path to the csv file with path segment annotations.
+            transform (callable, optional):
+                - Optional transform to be applied on a sample.
         """
-        self.paths_df = pd.read_csv(csv_file)
+        # Load the animal location data
+        df = pd.read_csv(csv_file)
+        # Clean the data by dropping unusable rows
+        df = df[df[LATITUDE].notna()]
+        df = df[df[LONGITUDE].notna()]
+        df = df[df[TIMESTAMP].notna()]
+        df = df[df[IDENTIFIER].notna()]
+        self.paths_df = df
+        # Initialize identifier lookup table
         self.individuals = {}
         self.transform = transform
 
@@ -30,7 +48,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         self.paths_df
         return len(self.paths_df)
 
-    def get_val(self, row, column_name):
+    def get_val(self, column_name, row):
         """
         Return a single column value from the provided row
         """
@@ -84,14 +102,14 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         if torch.is_tensor(row):
             row = row.tolist()
         # Get the geo-location data
-        lat = float(self.get_val("location-lat"))
-        lon = float(self.get_val("location-long"))
+        lat = self.get_val(LATITUDE, row)
+        lon = self.get_val(LONGITUDE, row)
         # Get the time data, creating numerical features
         # for year, month, day, and Unix time
-        time = self.get_val("timestamp")
+        time = self.get_val(TIMESTAMP, row)
         time_features = self.get_time_features(time)
         # Get the individual ID
-        ident = self.get_val("individual-local-identifier")
+        ident = self.get_val(IDENTIFIER, row)
         # Convert the individual ID to a numerical value
         idnum = self.convert_id_to_num(ident)
         # TODO: embed tag labels in the data itself
@@ -100,7 +118,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Combine identifier, time, and location features
         features = [idnum] + time_features + [lat, lon]
         # Build the sample dictionary
-        sample = {"features": features, "label": label}
+        sample = {"features": np.array(features), "label": np.array([label])}
         # Apply data transformations if any are specified
         if self.transform:
             sample = self.transform(sample)

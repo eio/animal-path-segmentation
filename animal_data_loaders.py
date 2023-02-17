@@ -4,14 +4,13 @@ from torchvision.transforms import Compose
 # Local scripts
 import AnimalPathsDataset as APD
 
-BATCH_SIZE = 1
 # Setup paths for accessing data
 TRAIN_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
 # TODO: this should be different, of course
 VALIDATION_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
 
 
-def build_data_loaders():
+def build_data_loaders(batch_size=1):
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
@@ -27,13 +26,22 @@ def build_data_loaders():
     # Build the Train loader
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=True,
     )
     # Build the Test loader
     validation_loader = torch.utils.data.DataLoader(
         validation_dataset,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=True,
     )
-    return train_loader, validation_loader
+    return {
+        "train": train_loader,
+        "test": validation_loader,
+    }
+
+
+if __name__ == "__main__":
+    # Test creation of the loaders
+    loaders = build_data_loaders(1)
+    print(loaders["train"])
