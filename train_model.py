@@ -67,12 +67,13 @@ def Optimizer(net):
     return optim.Adam(net.parameters(), lr=LEARNING_RATE)
 
 
-def save_model(net, optimizer):
+def save_model(epoch, net, optimizer):
     # https://pytorch.org/tutorials/beginner/saving_loading_models.html
     # Save the current state of the Model
     # so we can load the latest state later on
     torch.save(
         {
+            "epoch": epoch,
             "model_state_dict": net.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
         },
@@ -214,7 +215,7 @@ if __name__ == "__main__":
         #####################
         ## Save the Model  ##
         #####################
-        save_model(rnn, optimizer)
+        save_model(epoch, rnn, optimizer)
 
     ################################
     ################################
