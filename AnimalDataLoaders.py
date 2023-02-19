@@ -4,13 +4,21 @@ from torchvision.transforms import Compose
 # Local scripts
 import AnimalPathsDataset as APD
 
+# Shuffling time-series data is generally not appropriate,
+# and preserving the order of the records is important
+# for training an RNN on this type of data.
+# TODO: since time is added as a feature, maybe shuffling can be True?
+SHUFFLE = False
+# Default batch size
+BATCH_SIZE = 1
 # Setup paths for accessing data
 TRAIN_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
-# TODO: this should be different, of course
+# TODO: these should be different, of course
 VALIDATION_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
+FINAL_TEST_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
 
 
-def build_data_loaders(batch_size=1):
+def build_data_loaders(batch_size=BATCH_SIZE):
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
@@ -21,19 +29,18 @@ def build_data_loaders(batch_size=1):
         csv_file=VALIDATION_CSV,
         transform=Compose([APD.ToTensor()]),
     )
-    ### Docs:
-    ### https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
     # Build the Train loader
+    # https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=SHUFFLE,
     )
     # Build the Test loader
     validation_loader = torch.utils.data.DataLoader(
         validation_dataset,
         batch_size=batch_size,
-        shuffle=True,
+        shuffle=SHUFFLE,
     )
     return {
         "train": train_loader,
@@ -41,7 +48,22 @@ def build_data_loaders(batch_size=1):
     }
 
 
+def build_final_test_data_loader(batch_size=BATCH_SIZE):
+    # Create the Test dataset
+    dataset = APD.AnimalPathsDataset(
+        csv_file=FINAL_TEST_CSV,
+        transform=Compose([APD.ToTensor()]),
+    )
+    loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=SHUFFLE,
+    )
+    return loader
+
+
 if __name__ == "__main__":
     # Test creation of the loaders
     loaders = build_data_loaders(1)
-    print(loaders["train"])
+    for k, v in loaders.items():
+        print("{}: {}".format(k, v))

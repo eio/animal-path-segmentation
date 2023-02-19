@@ -1,6 +1,5 @@
 # Code adapted from:
 # https://pytorch.org/tutorials/recipes/recipes/custom_dataset_transforms_loader.html
-import os
 import torch
 import numpy as np
 import pandas as pd
@@ -10,14 +9,26 @@ WINTER_HOME = 0
 SUMMER_HOME = 1
 MIGRATING = 2
 # Keep track of all possible categories
-ALL_CATEGORIES = [WINTER_HOME, SUMMER_HOME, MIGRATING]
+ALL_CATEGORIES = ["WINTER_HOME", "SUMMER_HOME", "MIGRATING"]
 # Define strings for the column/feature names used
 IDENTIFIER = "individual-local-identifier"  # +1 feature
 LATITUDE = "location-lat"  # +1 feature
 LONGITUDE = "location-long"  # +1 feature
 TIMESTAMP = "timestamp"  # # +4 features (year, month, day, unixtime)
-# Keep track of total number of input features
-N_FEATURES = 7
+# Used for the output CSV
+OUTPUT_FIELDNAMES = [
+    "Predicted",
+    "Actual",
+    IDENTIFIER,
+    "Year",
+    "Month",
+    "Day",
+    "UnixTime",
+    LATITUDE,
+    LONGITUDE,
+]
+# # Keep track of total number of input features
+# N_FEATURES = 7
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -46,6 +57,18 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
     def __len__(self):
         self.paths_df
         return len(self.paths_df)
+
+    def get_individuals(self):
+        """
+        Return self.individuals dictionary in the form of:
+            {
+                N: "animal_id",
+                N+1: "animal_id2"
+                ...
+            }
+        (with keys/values swapped from how it was created)
+        """
+        return dict((v, k) for k, v in self.individuals.items())
 
     def get_val(self, column_name, row):
         """
@@ -117,7 +140,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Combine identifier, time, and location features
         features = [idnum] + time_features + [lat, lon]
         # Build the sample dictionary
-        sample = {"features": np.array(features), "label": np.array([label])}
+        sample = {"features": np.array(features), "label": np.array(label)}
         # Apply data transformations if any are specified
         if self.transform:
             sample = self.transform(sample)
@@ -130,9 +153,9 @@ class ToTensor(object):
 
     def __call__(self, sample):
         features, label = sample["features"], sample["label"]
-        # convert to tensors
-        features = torch.from_numpy(features)
-        label = torch.from_numpy(label)
+        # convert to tensors with dtype == torch.float32
+        features = torch.from_numpy(features).type(torch.float)
+        label = torch.from_numpy(label).type(torch.float)
         return {
             "features": features,
             "label": label,
