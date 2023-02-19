@@ -29,7 +29,7 @@ SAVED_MODEL_PATH = "results/model+optimizer.pth"
 # Check for CUDA / GPU Support
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Setup tunable constants
-N_EPOCHS = 10
+N_EPOCHS = 20
 BATCH_SIZE = 1
 LOG_INTERVAL = 100  # how many train/test records between print statements
 # Model parameters
@@ -196,7 +196,8 @@ if __name__ == "__main__":
                 label = int(category_tensor.item())
                 category = ALL_CATEGORIES[label]
                 # Check if the prediction matches the label
-                correct = "✓" if guess == category else "✗ (%s)" % category
+                is_correct = guess == category
+                correct = "✓" if is_correct else "✗ (%s)" % category
                 print(
                     "Train Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
                     % (
@@ -257,12 +258,14 @@ if __name__ == "__main__":
                 label = int(category_tensor.item())
                 category = ALL_CATEGORIES[label]
                 # Is the prediction correct?
-                correct_guess = guess == category
+                is_correct = guess == category
                 # Keep track of how many guesses are correct
-                if correct_guess:
+                if is_correct:
                     total_correct += 1
                 # Store prediction alongside input features for CSV out
-                csv_out_rows.append([guess, category] + reformat_features(features))
+                csv_out_rows.append(
+                    [is_correct, guess, category] + reformat_features(features)
+                )
                 # loss function expects category_tensor input to be torch.Long dtype
                 category_tensor = category_tensor.to(torch.long)
                 # calculate the loss
@@ -272,7 +275,7 @@ if __name__ == "__main__":
                 # Print iter number, loss, name and guess
                 if i % LOG_INTERVAL == 0:
                     # Check if the prediction matches the label
-                    correct = "✓" if correct_guess else "✗ (%s)" % category
+                    correct = "✓" if is_correct else "✗ (%s)" % category
                     print(
                         "Test Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
                         % (

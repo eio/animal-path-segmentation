@@ -17,6 +17,7 @@ LONGITUDE = "location-long"  # +1 feature
 TIMESTAMP = "timestamp"  # # +4 features (year, month, day, unixtime)
 # Used for the output CSV
 OUTPUT_FIELDNAMES = [
+    "Correct",
     "Predicted",
     "Actual",
     IDENTIFIER,
