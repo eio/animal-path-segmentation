@@ -4,7 +4,6 @@ import os
 import torch
 import numpy as np
 import pandas as pd
-from skimage import io, transform, img_as_ubyte, img_as_float
 
 # Numerical path segment labels
 WINTER_HOME = 0
