@@ -3,7 +3,6 @@ import sys
 import csv
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Machine Learning Framework
 import torch
@@ -11,13 +10,20 @@ import torch.nn as nn
 import torch.optim as optim
 
 # Local scripts
-from utils import humanTime, currentTime, timeSince, categoryFromOutput
 from AnimalDataLoaders import build_data_loaders
 from AnimalPathsDataset import ALL_CATEGORIES, OUTPUT_FIELDNAMES
+from utils import (
+    color,
+    human_time,
+    current_time,
+    time_since,
+    category_from_output,
+    plot_loss,
+)
 
 # Setup output paths
-FIGURES_OUTPUT_DIR = "figures/"
-PREDICTIONS_OUTPUT_DIR = "predictions/"
+PREDICTIONS_DIR = "predictions/"
+LOSS_PLOT_PATH = "figures/loss.png"
 SAVED_MODEL_PATH = "results/model+optimizer.pth"
 
 # Check for CUDA / GPU Support
@@ -31,7 +37,7 @@ INPUT_SIZE = 1  # one-dimensional with N values
 HIDDEN_SIZE = 10  # 128, tunable
 OUTPUT_SIZE = 3  # N_categories: winterhome, summerhome, migrating
 # Optimizer hyperparameters
-LEARNING_RATE = 0.005  # 0.005
+LEARNING_RATE = 0.005  # 0.01
 
 
 class Net(nn.Module):
@@ -88,27 +94,12 @@ def load_model():
     return net, optimizer
 
 
-def evaluate_performance(completed_epochs, avg_train_losses, avg_test_losses):
-    # print("train_losses", train_losses)
-    # print("test_losses", test_losses)
-    FIGURE_OUTPUT = FIGURES_OUTPUT_DIR + "loss.png"
-
-    fig = plt.figure()
-    plt.scatter(completed_epochs, avg_train_losses, color="blue")
-    plt.scatter(completed_epochs, avg_test_losses, color="red")
-    plt.legend(["Train Loss", "Test Loss"], loc="upper right")
-    plt.xlabel("Number of Epochs")
-    plt.ylabel("Cross Entropy (CE) Loss")
-    plt.savefig(FIGURE_OUTPUT)
-    print("Performance evaluation saved to: `{}`".format(FIGURE_OUTPUT))
-
-
 def write_output_csv(predictions, epoch):
     """
     Write model predictions to output CSV
     """
     csv_name = "predictions_epoch{}.csv".format(epoch)
-    output_csv = PREDICTIONS_OUTPUT_DIR + csv_name
+    output_csv = PREDICTIONS_DIR + csv_name
     print("Write the predicted output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -130,8 +121,8 @@ if __name__ == "__main__":
     #############################################
     ## Print start time to keep track of runtime
     #############################################
-    script_start = currentTime()
-    print("Start: {}".format(humanTime(script_start)))
+    script_start = current_time()
+    print("Start: {}".format(human_time(script_start)))
     ###########################
     ## Initialize the CNN model
     ###########################
@@ -191,19 +182,16 @@ if __name__ == "__main__":
 
     def train_batch(epoch):
         print("\nStart Training for Epoch #{}...".format(epoch))
-        current_loss = 0.0
         for i, batch in enumerate(train_loader, 0):
             # Send Tensors to GPU device (if CUDA-compatible)
             inputs_tensor = batch["features"].to(DEVICE)
             category_tensor = batch["label"].to(DEVICE)
             output, loss = train(category_tensor, inputs_tensor)
-            current_loss += loss
+            train_losses.append(loss)
             # Print iter number, loss, name and guess
             if i % LOG_INTERVAL == 0:
-                train_losses.append(current_loss)
-                current_loss = 0
                 # Get the predicted category string from the RNN output
-                guess, guess_i = categoryFromOutput(output, ALL_CATEGORIES)
+                guess, guess_i = category_from_output(output, ALL_CATEGORIES)
                 # Convert the label tensor to the category string
                 label = int(category_tensor.item())
                 category = ALL_CATEGORIES[label]
@@ -214,7 +202,7 @@ if __name__ == "__main__":
                     % (
                         epoch,
                         i / len(train_loader) * 100,
-                        timeSince(script_start),
+                        time_since(script_start),
                         loss,
                         "inputs_tensor",  # inputs_tensor.numpy()
                         guess,
@@ -264,7 +252,7 @@ if __name__ == "__main__":
                 output = output.cpu()
                 features = inputs_tensor.cpu()
                 # Get the predicted category string from the RNN output
-                guess, guess_i = categoryFromOutput(output, ALL_CATEGORIES)
+                guess, guess_i = category_from_output(output, ALL_CATEGORIES)
                 # Convert the label tensor to the category string
                 label = int(category_tensor.item())
                 category = ALL_CATEGORIES[label]
@@ -290,7 +278,7 @@ if __name__ == "__main__":
                         % (
                             epoch,
                             i / len(test_loader) * 100,
-                            timeSince(script_start),
+                            time_since(script_start),
                             test_loss,
                             "inputs_tensor",  # inputs_tensor.numpy()
                             guess,
@@ -301,7 +289,8 @@ if __name__ == "__main__":
         print("Test:")
         print("\tAvg. Loss: {}".format(np.mean(test_losses)))
         percent_correct = total_correct / len(test_loader) * 100
-        print("\tAccuracy: {}%".format(round(percent_correct, 2)))
+        percent_correct = round(percent_correct, 2)
+        print("\t{}Accuracy: {}%{}".format(color.BOLD, percent_correct, color.END))
         # Write the predicted poses to an output CSV
         # in the submission format expected
         write_output_csv(csv_out_rows, epoch)
@@ -341,7 +330,7 @@ if __name__ == "__main__":
         # Make epochs 1-indexed for better prints
         epoch_range = range(1, N_EPOCHS + 1)
         # Set the training start time
-        script_start = currentTime()
+        script_start = current_time()
         # Train and test for each epoch
         for epoch in epoch_range:
             train_batch(epoch)
@@ -360,12 +349,12 @@ if __name__ == "__main__":
         ##############################################################
         ## Output model performance evaluation chart across all epochs
         ##############################################################
-        evaluate_performance(completed_epochs, avg_train_losses, avg_test_losses)
+        plot_loss(LOSS_PLOT_PATH, completed_epochs, avg_train_losses, avg_test_losses)
 
     ############
     ## The End
     ############
-    end = currentTime()
-    print("\nEnd: {}".format(humanTime(end)))
+    end = current_time()
+    print("\nEnd: {}".format(human_time(end)))
     runtime = round(end - script_start, 3)
     print("Runtime: {} seconds\n".format(runtime))

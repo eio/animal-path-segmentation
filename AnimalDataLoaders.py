@@ -49,7 +49,7 @@ def build_data_loaders(batch_size=BATCH_SIZE):
 
 
 def build_final_test_data_loader(batch_size=BATCH_SIZE):
-    # Create the Test dataset
+    """ Final, unlabeled, test dataset """
     dataset = APD.AnimalPathsDataset(
         csv_file=FINAL_TEST_CSV,
         transform=Compose([APD.ToTensor()]),
