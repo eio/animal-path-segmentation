@@ -12,19 +12,9 @@ import torch.optim as optim
 # Local scripts
 from AnimalDataLoaders import build_data_loaders
 from AnimalPathsDataset import ALL_CATEGORIES, OUTPUT_FIELDNAMES
-from utils import (
-    color,
-    human_time,
-    current_time,
-    time_since,
-    category_from_output,
-    plot_loss,
-)
+from save_and_load import save_model, load_model, write_output_csv, plot_loss
+from utils import color, human_time, current_time, time_since, category_from_output
 
-# Setup output paths
-PREDICTIONS_DIR = "predictions/"
-LOSS_PLOT_PATH = "figures/loss.png"
-SAVED_MODEL_PATH = "results/model+optimizer.pth"
 
 # Check for CUDA / GPU Support
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -38,6 +28,16 @@ HIDDEN_SIZE = 10  # 128, tunable
 OUTPUT_SIZE = 3  # N_categories: winterhome, summerhome, migrating
 # Optimizer hyperparameters
 LEARNING_RATE = 0.005  # 0.01
+# Initialize the Loss function
+criterion = nn.CrossEntropyLoss()
+
+# Ensure deterministic behavior:
+# cuDNN uses nondeterministic algorithms which are disabled here
+torch.backends.cudnn.enabled = False
+# For repeatable experiments we have to set random seeds
+# for anything using random number generation
+random_seed = 1111
+torch.manual_seed(random_seed)
 
 
 class Net(nn.Module):
@@ -63,50 +63,8 @@ def Optimizer(net):
     Create optimizer with specified hyperparameters
     """
     # momentum = 0.5
-    # return optim.SGD(net.parameters(), lr=learning_rate, momentum=momentum)
+    # return optim.SGD(net.parameters(), lr=LEARNING_RATE, momentum=momentum)
     return optim.Adam(net.parameters(), lr=LEARNING_RATE)
-
-
-def save_model(epoch, net, optimizer):
-    # https://pytorch.org/tutorials/beginner/saving_loading_models.html
-    # Save the current state of the Model
-    # so we can load the latest state later on
-    torch.save(
-        {
-            "epoch": epoch,
-            "model_state_dict": net.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-        },
-        SAVED_MODEL_PATH,
-    )
-
-
-def load_model():
-    """
-    Load and return the saved, pre-trained Model and Optimizer
-    """
-    print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
-    saved_state = torch.load(SAVED_MODEL_PATH)
-    net = Net().to(DEVICE)
-    optimizer = Optimizer(net)
-    net.load_state_dict(saved_state["model_state_dict"])
-    optimizer.load_state_dict(saved_state["optimizer_state_dict"])
-    print("Model loaded.")
-    return net, optimizer
-
-
-def write_output_csv(predictions, epoch):
-    """
-    Write model predictions to output CSV
-    """
-    csv_name = "predictions_epoch{}.csv".format(epoch)
-    output_csv = PREDICTIONS_DIR + csv_name
-    print("Write the predicted output to: {}...".format(output_csv))
-    with open(output_csv, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(OUTPUT_FIELDNAMES)
-        for i in range(0, len(predictions)):
-            writer.writerow(predictions[i])
 
 
 if __name__ == "__main__":
@@ -131,24 +89,6 @@ if __name__ == "__main__":
     # Send model to GPU device (if CUDA-compatible)
     rnn = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
     optimizer = Optimizer(rnn)
-    ###############################
-    ## Initialize the Loss function
-    ###############################
-    criterion = nn.CrossEntropyLoss()
-    #############################
-    ## Configure the batch sizes
-    #############################
-    batch_size_train = BATCH_SIZE
-    batch_size_test = BATCH_SIZE
-    ################################
-    ## Ensure deterministic behavior
-    ################################
-    # cuDNN uses nondeterministic algorithms which are disabled here
-    torch.backends.cudnn.enabled = False
-    # For repeatable experiments we have to set random seeds
-    # for anything using random number generation
-    random_seed = 1
-    torch.manual_seed(random_seed)
     #########################
     ## Initialize the output
     #########################
@@ -297,7 +237,7 @@ if __name__ == "__main__":
         print("\t{}Accuracy: {}%{}".format(color.BOLD, percent_correct, color.END))
         # Write the predicted poses to an output CSV
         # in the submission format expected
-        write_output_csv(csv_out_rows, epoch)
+        write_output_csv(epoch, csv_out_rows, OUTPUT_FIELDNAMES)
 
     ####################################
     ####################################
@@ -353,7 +293,7 @@ if __name__ == "__main__":
         ##############################################################
         ## Output model performance evaluation chart across all epochs
         ##############################################################
-        plot_loss(LOSS_PLOT_PATH, completed_epochs, avg_train_losses, avg_test_losses)
+        plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
 
     ############
     ## The End
