@@ -43,7 +43,7 @@ def write_output_csv(epoch, predictions, fieldnames):
     """
     Write model predictions to output CSV
     """
-    csv_name = "predictions_epoch{}.csv".format(epoch)
+    csv_name = "predictions_epoch_{}.csv".format(epoch)
     output_csv = PREDICTIONS_DIR + csv_name
     print("Write the predicted output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:

@@ -29,7 +29,7 @@ def train(model, optimizer, criterion, label_tensor, inputs_tensor):
 
 
 def train_process(
-    model, optimizer, criterion, train_loader, script_start, device, log_interval, epoch
+    optimizer, model, criterion, train_loader, script_start, device, log_interval, epoch
 ):
     print("\nStart Training for Epoch #{}...".format(epoch))
     # Initialize losses
@@ -40,20 +40,23 @@ def train_process(
         # Send Tensors to GPU device (if CUDA-compatible)
         inputs_tensor = batch["features"].to(device)
         label_tensor = batch["label"].to(device)
+        # Make prediction, compute the loss, and update model with optimizer
         output, loss = train(model, optimizer, criterion, label_tensor, inputs_tensor)
+        # Store the loss value for this batch
         train_losses.append(loss)
-        # Print iter number, loss, name and guess
+        # Print iter number, loss, name, and guess
         if i % log_interval == 0:
             # Get the predicted category string from the model output
-            guess, guess_i = category_from_output(output)
+            guess = category_from_output(output)
             # Convert the label tensor to the category string
-            category = category_from_label(label_tensor)
+            label = category_from_label(label_tensor)
             # Check if the prediction matches the label
-            is_correct = guess == category
+            is_correct = guess == label
             # Keep track of how many guesses are correct
             if is_correct:
                 total_correct += 1
-            correct = "✓" if is_correct else "✗ (%s)" % category
+            # Generate print string to indicate success
+            correct = "✓" if is_correct else "✗ (%s)" % label
             print(
                 "Train Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
                 % (

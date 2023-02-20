@@ -13,9 +13,27 @@ from utils import (
 )
 
 
+def test(model, criterion, label_tensor, inputs_tensor):
+    # Forward pass
+    output = model(inputs_tensor)
+    # Loss function expects label_tensor input to be torch.Long dtype
+    label_tensor = label_tensor.to(torch_long)
+    # Compute loss
+    loss = criterion(output, label_tensor)
+    # Return the prediction and loss
+    return output, loss.item()
+
+
+def make_csv_output_row(is_correct, guess, label, features, individuals):
+    # Prepare input features for the output CSV row
+    features = reformat_features(features, individuals)
+    # Store prediction with input features in the output CSV row
+    row = [is_correct, guess, label] + features
+    return row
+
+
 def test_process(
     model,
-    optimizer,
     criterion,
     test_loader,
     script_start,
@@ -38,42 +56,43 @@ def test_process(
             # Send Tensors to GPU device (if CUDA-compatible)
             inputs_tensor = batch["features"].to(device)
             label_tensor = batch["label"].to(device)
-            # calculate outputs by running images through the network
-            output = model(inputs_tensor)
+            # Test the model by making a prediction and computing the loss
+            output, loss = test(model, criterion, label_tensor, inputs_tensor)
+            # Store the loss value for this batch
+            test_losses.append(loss)
             # Put data back on the CPU
             output = output.cpu()
             features = inputs_tensor.cpu()
             # Get the predicted category string from the model output
-            guess, guess_i = category_from_output(output)
+            guess = category_from_output(output)
             # Convert the label tensor to the category string
-            category = category_from_label(label_tensor)
+            label = category_from_label(label_tensor)
             # Is the prediction correct?
-            is_correct = guess == category
+            is_correct = guess == label
             # Keep track of how many guesses are correct
             if is_correct:
                 total_correct += 1
-            # Store prediction alongside input features for CSV out
-            features = reformat_features(
-                features, test_loader.dataset.get_individuals()
+            # Generate the CSV output row
+            row = make_csv_output_row(
+                is_correct,
+                guess,
+                label,
+                features,
+                test_loader.dataset.get_individuals(),
             )
-            csv_out_rows.append([is_correct, guess, category] + features)
-            # loss function expects label_tensor input to be torch.Long dtype
-            label_tensor = label_tensor.to(torch_long)
-            # calculate the loss
-            test_loss = criterion(output, label_tensor)
-            # store the loss value for this batch
-            test_losses.append(test_loss.item())
-            # Print iter number, loss, name and guess
+            # Store the CSV output row for writing later
+            csv_out_rows.append(row)
+            # Print epoch, loss, and guess
             if i % log_interval == 0:
-                # Check if the prediction matches the label
-                correct = "✓" if is_correct else "✗ (%s)" % category
+                # Generate print string to indicate success
+                correct = "✓" if is_correct else "✗ (%s)" % label
                 print(
                     "Test Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
                     % (
                         epoch,
                         i / len(test_loader) * 100,
                         time_since(script_start),
-                        test_loss,
+                        loss,
                         "inputs_tensor",  # inputs_tensor.numpy()
                         guess,
                         correct,

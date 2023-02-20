@@ -125,8 +125,8 @@ if __name__ == "__main__":
         for epoch in epoch_range:
             # Run the training process
             train_losses = train_process(
-                model,
                 optimizer,
+                model,
                 criterion,
                 train_loader,
                 script_start,
@@ -137,7 +137,6 @@ if __name__ == "__main__":
             # Run the testing process
             test_losses = test_process(
                 model,
-                optimizer,
                 criterion,
                 test_loader,
                 script_start,

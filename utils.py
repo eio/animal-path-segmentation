@@ -33,11 +33,11 @@ def category_from_output(output):
     """
     Convert from a 1x3 Tensor "likelihood"
     to the predicted category value and index
-    """
     # https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
+    """
     top_n, top_i = output.topk(1)
     category_i = top_i[0].item()
-    return ALL_CATEGORIES[category_i], category_i
+    return ALL_CATEGORIES[category_i]
 
 
 def reformat_features(features, individuals):
