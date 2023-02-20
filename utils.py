@@ -1,6 +1,9 @@
 import math
 from datetime import datetime
 
+# Local scripts
+from AnimalPathsDataset import ALL_CATEGORIES
+
 
 class color:
     # Color codes for terminal output
@@ -16,7 +19,17 @@ class color:
     END = "\033[0m"
 
 
-def category_from_output(output, all_categories):
+def category_from_label(label_tensor):
+    """
+    Convert the 1x1 label input Tensor
+    to the respective category string
+    """
+    label = int(label_tensor.item())
+    category = ALL_CATEGORIES[label]
+    return category
+
+
+def category_from_output(output):
     """
     Convert from a 1x3 Tensor "likelihood"
     to the predicted category value and index
@@ -24,7 +37,7 @@ def category_from_output(output, all_categories):
     # https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
     top_n, top_i = output.topk(1)
     category_i = top_i[0].item()
-    return all_categories[category_i], category_i
+    return ALL_CATEGORIES[category_i], category_i
 
 
 def reformat_features(features, individuals):

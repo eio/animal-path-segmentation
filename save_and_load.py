@@ -1,4 +1,4 @@
-import torch
+from torch import save as torch_save, load as torch_load
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -15,7 +15,7 @@ def save_model(epoch, net, optimizer):
     so we can load the latest state later on
     https://pytorch.org/tutorials/beginner/saving_loading_models.html
     """
-    torch.save(
+    torch_save(
         {
             "epoch": epoch,
             "model_state_dict": net.state_dict(),
@@ -30,7 +30,7 @@ def load_model():
     Load and return the saved, pre-trained Model and Optimizer
     """
     print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
-    saved_state = torch.load(SAVED_MODEL_PATH)
+    saved_state = torch_load(SAVED_MODEL_PATH)
     net = Net().to(DEVICE)
     optimizer = Optimizer(net)
     net.load_state_dict(saved_state["model_state_dict"])

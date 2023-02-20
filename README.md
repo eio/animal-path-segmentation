@@ -1,11 +1,13 @@
 # Usage
 
-	py train_model.py
+	py run_model.py
 
-To train the model:
-- show it a bunch of examples,
-- have it make guesses,
-- and tell it if it’s wrong.
+Training the model consists of:
+- showing it examples,
+- have it making guesses,
+- and telling it if it’s wrong.
+
+The trained model will also be tested on a validation dataset.
 
 # Outputs
 
