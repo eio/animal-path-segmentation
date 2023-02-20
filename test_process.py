@@ -14,7 +14,14 @@ from utils import (
 
 
 def test_process(
-    rnn, optimizer, criterion, test_loader, script_start, device, log_interval, epoch=1
+    model,
+    optimizer,
+    criterion,
+    test_loader,
+    script_start,
+    device,
+    log_interval,
+    epoch=1,
 ):
     print("\nStart Testing for Epoch {}...".format(epoch))
     # Initialize losses
@@ -32,11 +39,11 @@ def test_process(
             inputs_tensor = batch["features"].to(device)
             label_tensor = batch["label"].to(device)
             # calculate outputs by running images through the network
-            output = rnn(inputs_tensor)
+            output = model(inputs_tensor)
             # Put data back on the CPU
             output = output.cpu()
             features = inputs_tensor.cpu()
-            # Get the predicted category string from the RNN output
+            # Get the predicted category string from the model output
             guess, guess_i = category_from_output(output)
             # Convert the label tensor to the category string
             category = category_from_label(label_tensor)

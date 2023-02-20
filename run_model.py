@@ -42,31 +42,31 @@ random_seed = 1111
 torch.manual_seed(random_seed)
 
 
-class Net(nn.Module):
-    """ Basic RNNModel """
+class Model(nn.Module):
+    """ Basic RNN Model """
 
     def __init__(self, input_size, hidden_size, output_size):
-        super(Net, self).__init__()
+        super(Model, self).__init__()
         self.hidden_size = hidden_size
-        self.rnn = nn.RNN(input_size, hidden_size, batch_first=True)
+        self.model = nn.RNN(input_size, hidden_size, batch_first=True)
         ### TODO: compare RNN and LSTM
-        # self.rnn = nn.LSTM(input_size, hidden_size, batch_first=True)
+        # self.model = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
         x = x.unsqueeze(2)
-        out, hidden = self.rnn(x)
+        out, hidden = self.model(x)
         out = self.fc(out[:, -1, :])
         return out
 
 
-def Optimizer(net):
+def Optimizer(model):
     """
     Create optimizer with specified hyperparameters
     """
     # momentum = 0.5
-    # return optim.SGD(net.parameters(), lr=LEARNING_RATE, momentum=momentum)
-    return optim.Adam(net.parameters(), lr=LEARNING_RATE)
+    # return optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=momentum)
+    return optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 
 if __name__ == "__main__":
@@ -83,18 +83,17 @@ if __name__ == "__main__":
     ## Set start time to keep track of runtime
     ##########################################
     script_start = start_script()
-    ###########################
-    ## Initialize the RNN model
-    ###########################
+    #######################
+    ## Initialize the model
+    #######################
     # Send model to GPU device (if CUDA-compatible)
-    rnn = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
-    optimizer = Optimizer(rnn)
-    #########################
-    ## Initialize the output
-    #########################
+    model = Model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
+    optimizer = Optimizer(model)
+    #########################################
+    ## Initialize losses for loss plot output
+    #########################################
     train_losses = []
     test_losses = []
-
     ####################################
     ####################################
     ## Perform the Training and Testing
@@ -104,7 +103,7 @@ if __name__ == "__main__":
         ###############################################
         # Load the previously saved model and optimizer
         ###############################################
-        rnn, optimizer = load_model()
+        model, optimizer = load_model()
         # TODO: implement new data loader just for final test input
         test_loader = build_final_test_data_loader()
         # Test the loaded model on the final test data
@@ -129,7 +128,7 @@ if __name__ == "__main__":
         for epoch in epoch_range:
             # Run the training process
             train_losses = train_process(
-                rnn,
+                model,
                 optimizer,
                 criterion,
                 train_loader,
@@ -140,7 +139,7 @@ if __name__ == "__main__":
             )
             # Run the testing process
             test_losses = test_process(
-                rnn,
+                model,
                 optimizer,
                 criterion,
                 test_loader,

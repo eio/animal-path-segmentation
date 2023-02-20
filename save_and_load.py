@@ -9,7 +9,7 @@ LOSS_PLOT_PATH = "figures/loss.png"
 PREDICTIONS_DIR = "predictions/"
 
 
-def save_model(epoch, net, optimizer):
+def save_model(epoch, model, optimizer):
     """
     Save the current state of the Model
     so we can load the latest state later on
@@ -18,7 +18,7 @@ def save_model(epoch, net, optimizer):
     torch_save(
         {
             "epoch": epoch,
-            "model_state_dict": net.state_dict(),
+            "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
         },
         SAVED_MODEL_PATH,
@@ -31,12 +31,12 @@ def load_model():
     """
     print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
     saved_state = torch_load(SAVED_MODEL_PATH)
-    net = Net().to(DEVICE)
-    optimizer = Optimizer(net)
-    net.load_state_dict(saved_state["model_state_dict"])
+    model = Model().to(DEVICE)
+    optimizer = Optimizer(model)
+    model.load_state_dict(saved_state["model_state_dict"])
     optimizer.load_state_dict(saved_state["optimizer_state_dict"])
     print("Model loaded.")
-    return net, optimizer
+    return model, optimizer
 
 
 def write_output_csv(epoch, predictions, fieldnames):

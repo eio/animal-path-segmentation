@@ -5,18 +5,18 @@ from save_and_load import save_model
 from utils import color, time_since, category_from_label, category_from_output
 
 
-def train(rnn, optimizer, criterion, label_tensor, inputs_tensor):
+def train(model, optimizer, criterion, label_tensor, inputs_tensor):
     ## When using PyTorch's built-in RNN or LSTM modules,
     ## we don't need to define the initHidden() function explicitly.
     ## The hidden state is automatically initialized by the PyTorch module.
-    # hidden = rnn.initHidden()
+    # hidden = model.initHidden()
     ##############################
     ##############################
     # Clear the gradients of all optimized tensors
     # to prepare for a new backpropagation pass
     optimizer.zero_grad()
     # Forward pass
-    output = rnn(inputs_tensor)
+    output = model(inputs_tensor)
     # Loss function expects label_tensor input to be torch.Long dtype
     label_tensor = label_tensor.to(torch_long)
     # Compute loss
@@ -29,7 +29,7 @@ def train(rnn, optimizer, criterion, label_tensor, inputs_tensor):
 
 
 def train_process(
-    rnn, optimizer, criterion, train_loader, script_start, device, log_interval, epoch
+    model, optimizer, criterion, train_loader, script_start, device, log_interval, epoch
 ):
     print("\nStart Training for Epoch #{}...".format(epoch))
     # Initialize losses
@@ -40,11 +40,11 @@ def train_process(
         # Send Tensors to GPU device (if CUDA-compatible)
         inputs_tensor = batch["features"].to(device)
         label_tensor = batch["label"].to(device)
-        output, loss = train(rnn, optimizer, criterion, label_tensor, inputs_tensor)
+        output, loss = train(model, optimizer, criterion, label_tensor, inputs_tensor)
         train_losses.append(loss)
         # Print iter number, loss, name and guess
         if i % log_interval == 0:
-            # Get the predicted category string from the RNN output
+            # Get the predicted category string from the model output
             guess, guess_i = category_from_output(output)
             # Convert the label tensor to the category string
             category = category_from_label(label_tensor)
@@ -73,6 +73,6 @@ def train_process(
     #####################
     ## Save the Model  ##
     #####################
-    save_model(epoch, rnn, optimizer)
+    save_model(epoch, model, optimizer)
     # Return the train losses from this epoch
     return train_losses
