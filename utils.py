@@ -80,12 +80,20 @@ def time_since(since):
 
 
 def start_script():
+    """
+    Print the time the script starts
+    and keep track of it to compute runtime when it finishes
+    """
     script_start = current_time()
     print("Start: {}".format(human_time(script_start)))
     return script_start
 
 
 def finish_script(script_start):
+    """
+    Print the time the script finishes
+    and the total script runtime
+    """
     end = current_time()
     print("\nEnd: {}".format(human_time(end)))
     runtime = round(end - script_start, 3)
