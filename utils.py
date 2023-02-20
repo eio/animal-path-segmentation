@@ -16,6 +16,30 @@ class color:
     END = "\033[0m"
 
 
+def category_from_output(output, all_categories):
+    """
+    Convert from a 1x3 Tensor "likelihood"
+    to the predicted category value and index
+    """
+    # https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
+    top_n, top_i = output.topk(1)
+    category_i = top_i[0].item()
+    return all_categories[category_i], category_i
+
+
+def reformat_features(features, individuals):
+    """
+    Reformat features input Tensor
+    for easier interpretation in output CSV
+    """
+    # Flatten features tensor into normal Python list
+    features = list(features.numpy().flatten())
+    # Get the animal ID back from numerical representation
+    animal = int(features[0])
+    features[0] = individuals[animal]
+    return features
+
+
 def current_time():
     """
     Return the current Unix time
@@ -42,12 +66,14 @@ def time_since(since):
     return "%dm %ds" % (m, s)
 
 
-def category_from_output(output, all_categories):
-    """
-    Convert from a 1x3 Tensor "likelihood"
-    to the predicted category value and index
-    """
-    # https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
-    top_n, top_i = output.topk(1)
-    category_i = top_i[0].item()
-    return all_categories[category_i], category_i
+def start_script():
+    script_start = current_time()
+    print("Start: {}".format(human_time(script_start)))
+    return script_start
+
+
+def finish_script(script_start):
+    end = current_time()
+    print("\nEnd: {}".format(human_time(end)))
+    runtime = round(end - script_start, 3)
+    print("Runtime: {} seconds\n".format(runtime))

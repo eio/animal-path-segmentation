@@ -13,11 +13,19 @@ import torch.optim as optim
 from AnimalDataLoaders import build_data_loaders
 from AnimalPathsDataset import ALL_CATEGORIES, OUTPUT_FIELDNAMES
 from save_and_load import save_model, load_model, write_output_csv, plot_loss
-from utils import color, human_time, current_time, time_since, category_from_output
+from utils import (
+    color,
+    start_script,
+    finish_script,
+    time_since,
+    category_from_output,
+    reformat_features,
+)
 
 
 # Check for CUDA / GPU Support
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Running with device: {}".format(DEVICE))
 # Setup tunable constants
 N_EPOCHS = 20
 BATCH_SIZE = 1
@@ -77,15 +85,13 @@ if __name__ == "__main__":
     LOAD_MODEL = args.load
     TEST_SYNTHETIC = args.synthetic
     TEST_REAL = args.real
-    #############################################
-    ## Print start time to keep track of runtime
-    #############################################
-    script_start = current_time()
-    print("Start: {}".format(human_time(script_start)))
+    ##########################################
+    ## Set start time to keep track of runtime
+    ##########################################
+    script_start = start_script()
     ###########################
-    ## Initialize the CNN model
+    ## Initialize the RNN model
     ###########################
-    print("Running with device: {}".format(DEVICE))
     # Send model to GPU device (if CUDA-compatible)
     rnn = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
     optimizer = Optimizer(rnn)
@@ -95,11 +101,11 @@ if __name__ == "__main__":
     train_losses = []
     test_losses = []
 
-    ######################
-    ######################
-    ## Train the Network
-    ######################
-    ######################
+    ####################
+    ####################
+    ## Train the Model
+    ####################
+    ####################
     def train(category_tensor, inputs_tensor):
         ## When using PyTorch's built-in RNN or LSTM modules,
         ## we don't need to define the initHidden() function explicitly.
@@ -119,6 +125,7 @@ if __name__ == "__main__":
         # Backward pass and optimize
         loss.backward()
         optimizer.step()
+        # Return the prediction and loss
         return output, loss.item()
 
     def train_batch(epoch):
@@ -157,23 +164,11 @@ if __name__ == "__main__":
         #####################
         save_model(epoch, rnn, optimizer)
 
-    ################################
-    ################################
-    ### Test the Whole Test Dataset
-    ################################
-    ################################
-    def reformat_features(features):
-        """
-        Reformat features input Tensor
-        for easier interpretation in output CSV
-        """
-        # Flatten features tensor into normal Python list
-        features = list(features.numpy().flatten())
-        # Get the animal ID back from numerical representation
-        animal = int(features[0])
-        features[0] = test_loader.dataset.get_individuals()[animal]
-        return features
-
+    ####################
+    ####################
+    ### Test the Model
+    ####################
+    ####################
     def test(epoch=1):
         print("\nStart Testing for Epoch {}...".format(epoch))
         # Initialize array to store prediction alongside input features
@@ -204,9 +199,10 @@ if __name__ == "__main__":
                 if is_correct:
                     total_correct += 1
                 # Store prediction alongside input features for CSV out
-                csv_out_rows.append(
-                    [is_correct, guess, category] + reformat_features(features)
+                features = reformat_features(
+                    features, test_loader.dataset.get_individuals()
                 )
+                csv_out_rows.append([is_correct, guess, category] + features)
                 # loss function expects category_tensor input to be torch.Long dtype
                 category_tensor = category_tensor.to(torch.long)
                 # calculate the loss
@@ -244,10 +240,6 @@ if __name__ == "__main__":
     ## Perform the Training and Testing
     ####################################
     ####################################
-    # All it takes to train this network is:
-    # - show it a bunch of examples,
-    # - have it make guesses,
-    # - and tell it if it’s wrong.
     if LOAD_MODEL == True:
         ###############################################
         # Load the previously saved model and optimizer
@@ -273,8 +265,6 @@ if __name__ == "__main__":
         avg_test_losses = []
         # Make epochs 1-indexed for better prints
         epoch_range = range(1, N_EPOCHS + 1)
-        # Set the training start time
-        script_start = current_time()
         # Train and test for each epoch
         for epoch in epoch_range:
             train_batch(epoch)
@@ -298,7 +288,4 @@ if __name__ == "__main__":
     ############
     ## The End
     ############
-    end = current_time()
-    print("\nEnd: {}".format(human_time(end)))
-    runtime = round(end - script_start, 3)
-    print("Runtime: {} seconds\n".format(runtime))
+    finish_script(script_start)

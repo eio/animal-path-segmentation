@@ -2,6 +2,11 @@
 
 	py train_model.py
 
+To train the model:
+- show it a bunch of examples,
+- have it make guesses,
+- and tell it if it’s wrong.
+
 # Outputs
 
 All functions that save or load files can be found in `save_and_load.py`
