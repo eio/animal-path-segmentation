@@ -1,8 +1,5 @@
-import os
-import sys
-import csv
 import argparse
-import numpy as np
+from numpy import mean
 
 # Machine Learning Framework
 import torch
@@ -149,8 +146,8 @@ if __name__ == "__main__":
                 epoch,
             )
             # Find the average train/test losses
-            train_loss = np.mean(train_losses)
-            test_loss = np.mean(test_losses)
+            train_loss = mean(train_losses)
+            test_loss = mean(test_losses)
             # Keep track of stats for each epoch
             avg_train_losses.append(train_loss)
             avg_test_losses.append(test_loss)
