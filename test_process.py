@@ -44,14 +44,13 @@ def test_process(
     print("\nStart Testing for Epoch {}...".format(epoch))
     # Initialize losses
     test_losses = []
-    # Initialize correct prediction count
-    total_correct = 0
     # Initialize array to store prediction alongside input features
     csv_out_rows = []
+    # Initialize correct prediction count
+    total_correct = 0
     # Since we're not training,
     # we don't need to calculate the gradients for our outputs
     with no_grad():
-        # for data in test_loader:
         for i, batch in enumerate(test_loader, 0):
             # Send Tensors to GPU device (if CUDA-compatible)
             inputs_tensor = batch["features"].to(device)
@@ -67,7 +66,7 @@ def test_process(
             guess = category_from_output(output)
             # Convert the label tensor to the category string
             label = category_from_label(label_tensor)
-            # Is the prediction correct?
+            # Check if the prediction matches the label
             is_correct = guess == label
             # Keep track of how many guesses are correct
             if is_correct:
