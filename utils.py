@@ -53,6 +53,22 @@ def reformat_features(features, individuals):
     return features
 
 
+def make_csv_output_row(is_correct, guess, label, features, individuals):
+    """
+    Build the final output row for the predictions CSV,
+    including:
+    - the prediction's correctness (boolean)
+    - the prediction itself (string)
+    - the original label (string)
+    - the input features vector values
+    """
+    # Prepare input features for the output CSV row
+    features = reformat_features(features, individuals)
+    # Store prediction with input features in the output CSV row
+    row = [is_correct, guess, label] + features
+    return row
+
+
 def current_time():
     """
     Return the current Unix time

@@ -9,7 +9,7 @@ from utils import (
     time_since,
     category_from_label,
     category_from_output,
-    reformat_features,
+    make_csv_output_row,
 )
 
 
@@ -24,14 +24,6 @@ def test(model, criterion, label_tensor, inputs_tensor):
     return output, loss.item()
 
 
-def make_csv_output_row(is_correct, guess, label, features, individuals):
-    # Prepare input features for the output CSV row
-    features = reformat_features(features, individuals)
-    # Store prediction with input features in the output CSV row
-    row = [is_correct, guess, label] + features
-    return row
-
-
 def test_process(
     model,
     criterion,
@@ -39,8 +31,14 @@ def test_process(
     script_start,
     device,
     log_interval,
-    epoch=1,
+    epoch=None,
 ):
+    # Determine if this is the final test
+    # or just one of many validation epochs
+    final_test = False
+    if epoch == None:
+        final_test = True
+        epoch = 1
     print("\nStart Testing for Epoch {}...".format(epoch))
     # Initialize losses
     test_losses = []
@@ -103,8 +101,13 @@ def test_process(
     percent_correct = total_correct / len(test_loader) * 100
     percent_correct = round(percent_correct, 2)
     print("\t{}Test Accuracy: {}%{}".format(color.BOLD, percent_correct, color.END))
+    # Determine the output predictions CSV filename
+    if final_test == True:
+        outname = "final_test.csv"
+    else:
+        outname = "epoch_{}.csv".format(epoch)
     # Write the predicted poses to an output CSV
     # in the submission format expected
-    write_output_csv(epoch, csv_out_rows, OUTPUT_FIELDNAMES)
+    write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
     # Return the test losses from this epoch
     return test_losses

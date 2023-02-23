@@ -7,11 +7,14 @@ import torch.nn as nn
 import torch.optim as optim
 
 # Local scripts
-from AnimalDataLoaders import build_data_loaders
+from utils import start_script, finish_script
 from save_and_load import load_model, plot_loss
 from train_process import train_process
 from test_process import test_process
-from utils import start_script, finish_script
+from AnimalDataLoaders import (
+    build_data_loaders,
+    build_final_test_data_loader,
+)
 
 
 # Check for CUDA / GPU Support
@@ -70,12 +73,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # on/off flag for whether script should run in "load" or "train" mode
     parser.add_argument("-l", "--load", action="store_true")
-    parser.add_argument("-ts", "--synthetic", action="store_true")
-    parser.add_argument("-tr", "--real", action="store_true")
     args = parser.parse_args()
     LOAD_MODEL = args.load
-    TEST_SYNTHETIC = args.synthetic
-    TEST_REAL = args.real
     ##########################################
     ## Set start time to keep track of runtime
     ##########################################
@@ -91,24 +90,30 @@ if __name__ == "__main__":
     #########################################
     train_losses = []
     test_losses = []
-    ####################################
-    ####################################
+    ###################################
+    ###################################
     ## Perform the Training and Testing
-    ####################################
-    ####################################
+    ###################################
+    ###################################
     if LOAD_MODEL == True:
         ###############################################
         # Load the previously saved model and optimizer
         ###############################################
-        model, optimizer = load_model()
-        # TODO: implement new data loader just for final test input
+        model, optimizer = load_model(model, optimizer)
+        ##################################################
+        ## Load the custom AnimalPathsDataset testing data
+        ##################################################
         test_loader = build_final_test_data_loader()
-        # Test the loaded model on the final test data
-        test_process()
+        #########################################
+        ## Test the loaded model on the test data
+        #########################################
+        test_losses = test_process(
+            model, criterion, test_loader, script_start, DEVICE, LOG_INTERVAL
+        )
     else:
-        #################################################################
-        ## Load the custom SatellitePoseDataset into PyTorch DataLoaders
-        #################################################################
+        ###################################################
+        ## Load the custom AnimalPathsDataset training data
+        ###################################################
         loaders = build_data_loaders()
         train_loader = loaders["train"]
         test_loader = loaders["test"]
@@ -158,7 +163,7 @@ if __name__ == "__main__":
         ##############################################################
         plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
 
-    ############
+    ##########
     ## The End
-    ############
+    ##########
     finish_script(script_start)

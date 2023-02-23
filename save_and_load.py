@@ -25,25 +25,23 @@ def save_model(epoch, model, optimizer):
     )
 
 
-def load_model():
+def load_model(model, optimizer):
     """
     Load and return the saved, pre-trained Model and Optimizer
     """
     print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
     saved_state = torch_load(SAVED_MODEL_PATH)
-    model = Model().to(DEVICE)
-    optimizer = Optimizer(model)
     model.load_state_dict(saved_state["model_state_dict"])
     optimizer.load_state_dict(saved_state["optimizer_state_dict"])
     print("Model loaded.")
     return model, optimizer
 
 
-def write_output_csv(epoch, predictions, fieldnames):
+def write_output_csv(outname, predictions, fieldnames):
     """
     Write model predictions to output CSV
     """
-    csv_name = "predictions_epoch_{}.csv".format(epoch)
+    csv_name = "predictions_" + outname
     output_csv = PREDICTIONS_DIR + csv_name
     print("Write the predicted output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
