@@ -1,5 +1,5 @@
-from torch import no_grad, long as torch_long
-from numpy import mean
+from numpy import mean, count_nonzero as count_true
+from torch import no_grad, tensor, long as torch_long
 
 # Local scripts
 from AnimalPathsDataset import OUTPUT_FIELDNAMES
@@ -7,21 +7,27 @@ from save_and_load import write_output_csv
 from utils import (
     color,
     time_since,
-    category_from_label,
-    category_from_output,
-    make_csv_output_row,
+    categories_from_label,
+    categories_from_output,
+    make_csv_output_rows,
 )
 
 
-def test(model, criterion, label_tensor, inputs_tensor):
+def test(model, criterion, labels_tensor, inputs_tensor):
+    # Get the sequence length of this input
+    # (i.e. number of waypoints in the trajectory)
+    # where inputs_tensor.shape = [batch_size, seq_length, num_Features]
+    seq_length = tensor([inputs_tensor.shape[1]])
     # Forward pass
-    output = model(inputs_tensor)
-    # Loss function expects label_tensor input to be torch.Long dtype
-    label_tensor = label_tensor.to(torch_long)
+    output_tensor = model(inputs_tensor, seq_length)
+    # Loss function expects labels_tensor input to be torch.Long dtype
+    labels_tensor = labels_tensor.to(torch_long)
     # Compute loss
-    loss = criterion(output, label_tensor)
+    # output_tensor.shape = [batch_size, seq_length, num_Categories]
+    # labels_tensor.shape = [batch_size, seq_length]
+    loss = criterion(output_tensor.view(-1, 3), labels_tensor.view(-1))
     # Return the prediction and loss
-    return output, loss.item()
+    return output_tensor, loss.item()
 
 
 def test_process(
@@ -49,58 +55,54 @@ def test_process(
     # Since we're not training,
     # we don't need to calculate the gradients for our outputs
     with no_grad():
+        # Iterate through the test data
         for i, batch in enumerate(test_loader, 0):
             # Send Tensors to GPU device (if CUDA-compatible)
             inputs_tensor = batch["features"].to(device)
-            label_tensor = batch["label"].to(device)
+            labels_tensor = batch["labels"].to(device)
             # Test the model by making a prediction and computing the loss
-            output, loss = test(model, criterion, label_tensor, inputs_tensor)
+            output, loss = test(model, criterion, labels_tensor, inputs_tensor)
             # Store the loss value for this batch
             test_losses.append(loss)
             # Put data back on the CPU
             output = output.cpu()
             features = inputs_tensor.cpu()
             # Get the predicted category string from the model output
-            guess = category_from_output(output)
+            guesses = categories_from_output(output)
             # Convert the label tensor to the category string
-            label = category_from_label(label_tensor)
-            # Check if the prediction matches the label
-            is_correct = guess == label
-            # Keep track of how many guesses are correct
-            if is_correct:
-                total_correct += 1
-            # Generate the CSV output row
-            row = make_csv_output_row(
-                is_correct,
-                guess,
-                label,
-                features,
-                test_loader.dataset.get_individuals(),
+            labels = categories_from_label(labels_tensor)
+            # Check if the predictions array matches the labels array
+            is_correct = guesses == labels
+            # Count the number of correct predictions
+            correct = count_true(is_correct)
+            # Keep a running tally of correct guesses
+            total_correct += correct
+            # Generate the CSV output rows
+            rows = make_csv_output_rows(
+                is_correct, guesses, labels, batch["id"], features
             )
             # Store the CSV output row for writing later
-            csv_out_rows.append(row)
-            # Print epoch, loss, and guess
+            csv_out_rows += rows
+            # Print details about this testing step
             if i % log_interval == 0:
-                # Generate print string to indicate success
-                correct = "✓" if is_correct else "✗ (%s)" % label
                 print(
-                    "Test Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
+                    "Trajectory: %d , Correct: %d/%d , Accuracy: %.2f%% , Loss: %.4f , Progress: %d%% (%s)"
                     % (
-                        epoch,
-                        i / len(test_loader) * 100,
-                        time_since(script_start),
-                        loss,
-                        "inputs_tensor",  # inputs_tensor.numpy()
-                        guess,
+                        (i + 1),
                         correct,
+                        len(is_correct),
+                        correct / len(is_correct) * 100,
+                        loss,
+                        (i + 1) / len(test_loader) * 100,
+                        time_since(script_start),
                     )
                 )
     print("Finished Testing for Epoch {}.".format(epoch))
     print("Test:")
     print("\tAvg. Loss: {}".format(mean(test_losses)))
-    percent_correct = total_correct / len(test_loader) * 100
-    percent_correct = round(percent_correct, 2)
-    print("\t{}Test Accuracy: {}%{}".format(color.BOLD, percent_correct, color.END))
+    percent_correct = total_correct / test_loader.dataset.total_records() * 100
+    test_accuracy = round(percent_correct, 2)
+    print("\t{}Test Accuracy: {}%{}".format(color.BOLD, test_accuracy, color.END))
     # Determine the output predictions CSV filename
     if final_test == True:
         outname = "final_test.csv"
@@ -109,5 +111,5 @@ def test_process(
     # Write the predicted poses to an output CSV
     # in the submission format expected
     write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
-    # Return the test losses from this epoch
-    return test_losses
+    # Return the test losses and accuracy from this epoch
+    return test_losses, test_accuracy

@@ -1,11 +1,12 @@
-from torch import long as torch_long
+from numpy import count_nonzero as count_true
+from torch import tensor, long as torch_long
 
 # Local scripts
 from save_and_load import save_model
-from utils import color, time_since, category_from_label, category_from_output
+from utils import color, time_since, categories_from_label, categories_from_output
 
 
-def train(model, optimizer, criterion, label_tensor, inputs_tensor):
+def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
     ## When using PyTorch's built-in RNN or LSTM modules,
     ## we don't need to define the initHidden() function explicitly.
     ## The hidden state is automatically initialized by the PyTorch module.
@@ -15,17 +16,23 @@ def train(model, optimizer, criterion, label_tensor, inputs_tensor):
     # Clear the gradients of all optimized tensors
     # to prepare for a new backpropagation pass
     optimizer.zero_grad()
+    # Get the sequence length of this input
+    # (i.e. number of waypoints in the trajectory)
+    # where inputs_tensor.shape = [batch_size, seq_length, num_Features]
+    seq_length = tensor([inputs_tensor.shape[1]])
     # Forward pass
-    output = model(inputs_tensor)
-    # Loss function expects label_tensor input to be torch.Long dtype
-    label_tensor = label_tensor.to(torch_long)
+    output_tensor = model(inputs_tensor, seq_length)
+    # Loss function expects labels_tensor input to be torch.Long dtype
+    labels_tensor = labels_tensor.to(torch_long)
     # Compute loss
-    loss = criterion(output, label_tensor)
+    # output_tensor.shape = [batch_size, seq_length, num_Categories]
+    # labels_tensor.shape = [batch_size, seq_length]
+    loss = criterion(output_tensor.view(-1, 3), labels_tensor.view(-1))
     # Backward pass and optimize
     loss.backward()
     optimizer.step()
     # Return the prediction and loss
-    return output, loss.item()
+    return output_tensor, loss.item()
 
 
 def train_process(
@@ -36,46 +43,46 @@ def train_process(
     train_losses = []
     # Initialize correct prediction count
     total_correct = 0
+    # Iterate through the training data
     for i, batch in enumerate(train_loader, 0):
         # Send Tensors to GPU device (if CUDA-compatible)
         inputs_tensor = batch["features"].to(device)
-        label_tensor = batch["label"].to(device)
+        labels_tensor = batch["labels"].to(device)
         # Make prediction, compute the loss, and update model with optimizer
-        output, loss = train(model, optimizer, criterion, label_tensor, inputs_tensor)
+        output, loss = train(model, optimizer, criterion, labels_tensor, inputs_tensor)
         # Store the loss value for this batch
         train_losses.append(loss)
-        # Print iter number, loss, name, and guess
+        # Get the predicted category string from the model output
+        guesses = categories_from_output(output)
+        # Convert the labels tensor to the category strings
+        labels = categories_from_label(labels_tensor)
+        # Check if the predictions array matches the labels array
+        is_correct = guesses == labels
+        # Count the number of correct predictions
+        correct = count_true(is_correct)
+        # Keep a running tally of correct guesses
+        total_correct += correct
+        # Print details about this training step
         if i % log_interval == 0:
-            # Get the predicted category string from the model output
-            guess = category_from_output(output)
-            # Convert the label tensor to the category string
-            label = category_from_label(label_tensor)
-            # Check if the prediction matches the label
-            is_correct = guess == label
-            # Keep track of how many guesses are correct
-            if is_correct:
-                total_correct += 1
-            # Generate print string to indicate success
-            correct = "✓" if is_correct else "✗ (%s)" % label
             print(
-                "Train Epoch:%d %d%% (%s) Loss:%.4f %s / %s %s"
+                "Trajectory: %d , Correct: %d/%d , Accuracy: %.2f%% , Loss: %.4f , Progress: %d%% (%s)"
                 % (
-                    epoch,
-                    i / len(train_loader) * 100,
-                    time_since(script_start),
-                    loss,
-                    "inputs_tensor",  # inputs_tensor.numpy()
-                    guess,
+                    (i + 1),
                     correct,
+                    len(is_correct),
+                    correct / len(is_correct) * 100,
+                    loss,
+                    (i + 1) / len(train_loader) * 100,
+                    time_since(script_start),
                 )
             )
     print("Finished Training for Epoch #{}.".format(epoch))
-    # percent_correct = total_correct / len(train_loader) * 100
-    # percent_correct = round(percent_correct, 2)
-    # print("{}Train Accuracy: {}%{}".format(color.BOLD, percent_correct, color.END))
+    percent_correct = total_correct / train_loader.dataset.total_records() * 100
+    train_accuracy = round(percent_correct, 2)
+    print("\t{}Train Accuracy: {}%{}".format(color.BOLD, train_accuracy, color.END))
     #####################
     ## Save the Model  ##
     #####################
     save_model(epoch, model, optimizer)
-    # Return the train losses from this epoch
-    return train_losses
+    # Return the train losses and accuracy from this epoch
+    return train_losses, train_accuracy

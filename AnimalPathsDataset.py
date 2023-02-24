@@ -15,18 +15,22 @@ IDENTIFIER = "individual-local-identifier"  # +1 feature
 LATITUDE = "location-lat"  # +1 feature
 LONGITUDE = "location-long"  # +1 feature
 TIMESTAMP = "timestamp"  # # +4 features (year, month, day, unixtime)
+YEAR = "Year"
+MONTH = "Month"
+DAY = "Day"
+UNIXTIME = "UnixTime"
 # Used for the output CSV
 OUTPUT_FIELDNAMES = [
     "Correct",
     "Predicted",
     "Actual",
     IDENTIFIER,
-    "Year",
-    "Month",
-    "Day",
-    "UnixTime",
     LATITUDE,
     LONGITUDE,
+    YEAR,
+    MONTH,
+    DAY,
+    UNIXTIME,
 ]
 # # Keep track of total number of input features
 # N_FEATURES = 7
@@ -43,64 +47,64 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
             transform (callable, optional):
                 - Optional transform to be applied on a sample.
         """
+        # Load, trim, clean, and transform the data
+        self.paths_df = self.load_and_transform_data(csv_file)
+        # Group the data into individual animal trajectories
+        # where a trajectory = the full time series per individual
+        self.trajectories = self.paths_df.groupby([IDENTIFIER])
+        # Get the unique group names (i.e. list of unique individuals)
+        self.individual_ids = list(self.trajectories.groups.keys())
+        # Initialize identifier lookup table
+        self.individuals = {}
+        # Data transform applied in DataLoaders
+        self.transform = transform
+
+    def __len__(self):
+        """
+        Count the number of individual trajectories
+        which corresponds to unique individual IDs
+        """
+        return len(self.individual_ids)
+
+    def total_records(self):
+        """
+        Count the total number of records
+        in the original cleaned dataset
+        """
+        return len(self.paths_df)
+
+    def load_and_transform_data(self, csv_file):
+        """
+        Load, trim, clean, and transform the data
+        """
         # Load the animal location data
         df = pd.read_csv(csv_file)
-        # Clean the data by dropping unusable rows
+        # Drop all columns except the ones we care about
+        df = df[[IDENTIFIER, LATITUDE, LONGITUDE, TIMESTAMP]]
+        # Drop rows with missing data
         df = df[df[LATITUDE].notna()]
         df = df[df[LONGITUDE].notna()]
         df = df[df[TIMESTAMP].notna()]
         df = df[df[IDENTIFIER].notna()]
-        self.paths_df = df
-        # Initialize identifier lookup table
-        self.individuals = {}
-        self.transform = transform
+        # Expand the time features to numerical values
+        df = self.transform_time_features(df)
+        return df
 
-    def __len__(self):
-        self.paths_df
-        return len(self.paths_df)
-
-    def get_individuals(self):
-        """
-        Return self.individuals dictionary in the form of:
-            {
-                N: "animal_id",
-                N+1: "animal_id2"
-                ...
-            }
-        (with keys/values swapped from how it was created)
-        """
-        return dict((v, k) for k, v in self.individuals.items())
-
-    def get_val(self, column_name, row):
-        """
-        Return a single column value from the provided row
-        """
-        idx = self.paths_df.columns.get_loc(column_name)
-        return self.paths_df.iloc[row, idx]
-
-    def get_time_features(self, dt):
+    def transform_time_features(self, df):
         """
         Return vector of numerical time features:
         integers for date values, and float for Unix time
         """
-        dt = pd.to_datetime(dt)
-        d = dt.date()
-        return [d.year, d.month, d.day, dt.timestamp()]
-
-    def convert_id_to_num(self, ident):
-        """
-        Convert from an individual animal's identifier
-        string to an integer feature value
-        """
-        if ident in self.individuals:
-            # retrieve zero-indexed identifier
-            return self.individuals[ident]
-        else:
-            # assign and return a new
-            # zero-indexed identifier
-            idx = len(self.individuals)
-            self.individuals[ident] = idx
-            return idx
+        df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
+        df[YEAR] = df[TIMESTAMP].dt.year
+        df[MONTH] = df[TIMESTAMP].dt.month
+        df[DAY] = df[TIMESTAMP].dt.day
+        df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
+        # Delete the original "timestamp" column
+        del df[TIMESTAMP]
+        # TODO: Account for cyclical seasons in a year
+        # sin/cos applied to `seconds_since_NYE` to capture circularity
+        return df
 
     def get_segment_label(self, lat):
         # TODO: this function should be removed
@@ -117,31 +121,27 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
             # Otherwise, assume migration-in-progress
             return MIGRATING
 
-    def __getitem__(self, row):
+    def __getitem__(self, idx):
         """
         Build the features vector and label
         for the provided data row
         """
-        if torch.is_tensor(row):
-            row = row.tolist()
-        # Get the geo-location data
-        lat = self.get_val(LATITUDE, row)
-        lon = self.get_val(LONGITUDE, row)
-        # Get the time data, creating numerical features
-        # for year, month, day, and Unix time
-        time = self.get_val(TIMESTAMP, row)
-        time_features = self.get_time_features(time)
-        # Get the individual ID
-        ident = self.get_val(IDENTIFIER, row)
-        # Convert the individual ID to a numerical value
-        idnum = self.convert_id_to_num(ident)
-        # TODO: embed tag labels in the data itself
-        # label = self.getval("segment-label")
-        label = self.get_segment_label(lat)
-        # Combine identifier, time, and location features
-        features = [idnum] + time_features + [lat, lon]
-        # Build the sample dictionary
-        sample = {"features": np.array(features), "label": np.array(label)}
+        if torch.is_tensor(idx):
+            row = idx.tolist()
+        # Get the unique individual identifier
+        identifier = self.individual_ids[idx]
+        # Get the full trajectory of time-series data for this individual
+        trajectory = self.trajectories.get_group(identifier).reset_index(drop=True)
+        # Delete the ID column, since we don't want it as a data feature
+        del trajectory[IDENTIFIER]
+        # TODO: Remove fake labels
+        # Generate fake labels dataframe
+        labels = trajectory[LATITUDE].apply(self.get_segment_label)
+        # TODO: Normalize
+        # 0 mean and standard deviation
+        # self.normalize(trajectory)
+        # Build the sample dictionary, including the animal ID for CSV output
+        sample = {"id": identifier, "features": trajectory, "labels": labels}
         # Apply data transformations if any are specified
         if self.transform:
             sample = self.transform(sample)
@@ -153,11 +153,16 @@ class ToTensor(object):
     """Convert ndarrays in sample to Tensors"""
 
     def __call__(self, sample):
-        features, label = sample["features"], sample["label"]
-        # convert to tensors with dtype == torch.float32
-        features = torch.from_numpy(features).type(torch.float)
-        label = torch.from_numpy(label).type(torch.float)
+        identifier, features, label = (
+            sample["id"],
+            sample["features"],
+            sample["labels"],
+        )
+        # Convert relevant data to tensors with dtype == torch.float32
+        features = torch.from_numpy(features.values).type(torch.float)
+        label = torch.from_numpy(label.values).type(torch.float)
         return {
+            "id": identifier,
             "features": features,
-            "label": label,
+            "labels": label,
         }

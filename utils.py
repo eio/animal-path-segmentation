@@ -1,5 +1,7 @@
 import math
+import torch
 from datetime import datetime
+from numpy import array as np_array
 
 # Local scripts
 from AnimalPathsDataset import ALL_CATEGORIES
@@ -19,25 +21,28 @@ class color:
     END = "\033[0m"
 
 
-def category_from_label(label_tensor):
+def categories_from_label(labels_tensor):
     """
-    Convert the 1x1 label input Tensor
-    to the respective category string
+    Convert the integer labels_tensor
+    to a list of the respective category strings
+    (where labels_tensor.shape = [batch_size, seq_length])
     """
-    label = int(label_tensor.item())
-    category = ALL_CATEGORIES[label]
-    return category
+    # Map label integers to label strings
+    categories = [ALL_CATEGORIES[i] for i in labels_tensor.flatten().int()]
+    return np_array(categories)
 
 
-def category_from_output(output):
+def categories_from_output(output_tensor):
     """
-    Convert from a 1x3 Tensor "likelihood"
-    to the predicted category value and index
-    # https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial.html
+    Convert from "likelihood" output_tensor
+    to a list of the predicted category strings
+    (where output_tensor.shape = [batch_size, seq_length, num_Categories])
     """
-    top_n, top_i = output.topk(1)
-    category_i = top_i[0].item()
-    return ALL_CATEGORIES[category_i]
+    # Get max values and indices along the last (i.e. Categories) dimension
+    max_values, max_indices = torch.max(output_tensor, dim=-1)
+    # Map max indices to labels
+    categories = [ALL_CATEGORIES[i] for i in max_indices.flatten()]
+    return np_array(categories)
 
 
 def reformat_features(features, individuals):
@@ -53,20 +58,31 @@ def reformat_features(features, individuals):
     return features
 
 
-def make_csv_output_row(is_correct, guess, label, features, individuals):
+def make_csv_output_rows(is_correct, guess, label, identifier, features_tensor):
     """
     Build the final output row for the predictions CSV,
     including:
     - the prediction's correctness (boolean)
     - the prediction itself (string)
     - the original label (string)
+    - the "individual-local-identifier" / animal ID (string)
     - the input features vector values
     """
-    # Prepare input features for the output CSV row
-    features = reformat_features(features, individuals)
-    # Store prediction with input features in the output CSV row
-    row = [is_correct, guess, label] + features
-    return row
+    # Initialize list of output rows
+    rows = []
+    # Combine first three lists into list of tuples
+    data = list(zip(is_correct, guess, label))
+    # Since features_tensor has a single batch dimension,
+    # we use squeeze() to remove it and get a 2D tensor
+    # with shape (seq_length, 6)
+    features = features_tensor.squeeze(0)
+    # Iterate over data and features, building and saving each row
+    for i, (d, f) in enumerate(zip(data, features)):
+        # Combine the data into a single list for the CSV output row
+        row = list(d) + list(identifier) + f.tolist()
+        rows.append(row)
+    # Return the list of output rows
+    return rows
 
 
 def current_time():

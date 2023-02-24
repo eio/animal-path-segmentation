@@ -5,8 +5,9 @@ from matplotlib.ticker import MaxNLocator
 
 # Setup output paths
 SAVED_MODEL_PATH = "results/model+optimizer.pth"
+ACCURACY_PLOT_PATH = "figures/accuracy.png"
 LOSS_PLOT_PATH = "figures/loss.png"
-PREDICTIONS_DIR = "predictions/"
+PREDICTIONS_DIR = "predictions/epochs/"
 
 
 def save_model(epoch, model, optimizer):
@@ -27,14 +28,14 @@ def save_model(epoch, model, optimizer):
 
 def load_model(model, optimizer):
     """
-    Load and return the saved, pre-trained Model and Optimizer
+    Load and return the pre-trained Model, Optimizer, and final epoch number
     """
     print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
     saved_state = torch_load(SAVED_MODEL_PATH)
     model.load_state_dict(saved_state["model_state_dict"])
     optimizer.load_state_dict(saved_state["optimizer_state_dict"])
     print("Model loaded.")
-    return model, optimizer
+    return model, optimizer, saved_state["epoch"]
 
 
 def write_output_csv(outname, predictions, fieldnames):
@@ -67,4 +68,23 @@ def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
     # since fractional epochs aren't a thing
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.savefig(LOSS_PLOT_PATH)
-    print("Performance evaluation saved to: `{}`".format(LOSS_PLOT_PATH))
+    print("Loss plot saved to: `{}`".format(LOSS_PLOT_PATH))
+
+
+def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
+    """
+    Generate a plot showing the accuracy-per-epoch
+    for both the training and test datasets
+    """
+    fig = plt.figure()
+    ax = fig.gca()
+    plt.scatter(completed_epochs, train_accuracies, color="blue")
+    plt.scatter(completed_epochs, test_accuracies, color="red")
+    plt.legend(["Train Accuracy", "Test Accuracy"], loc="upper right")
+    plt.xlabel("Number of Epochs")
+    plt.ylabel("Accuracy (%)")
+    # Force integer X-axis tick marks,
+    # since fractional epochs aren't a thing
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.savefig(ACCURACY_PLOT_PATH)
+    print("Accuracy plot saved to: `{}`".format(ACCURACY_PLOT_PATH))

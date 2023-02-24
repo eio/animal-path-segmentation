@@ -5,10 +5,11 @@ from numpy import mean
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
+from save_and_load import load_model, plot_loss, plot_accuracy
 from utils import start_script, finish_script
-from save_and_load import load_model, plot_loss
 from train_process import train_process
 from test_process import test_process
 from AnimalDataLoaders import (
@@ -21,15 +22,15 @@ from AnimalDataLoaders import (
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
 # Setup tunable constants
-N_EPOCHS = 20
+N_EPOCHS = 100
 BATCH_SIZE = 1
-LOG_INTERVAL = 100  # how many train/test records between print statements
+LOG_INTERVAL = 1
 # Model parameters
-INPUT_SIZE = 1  # one-dimensional with N values
-HIDDEN_SIZE = 10  # 128, tunable
+INPUT_SIZE = 6  # number of features / covariates
+HIDDEN_SIZE = 10  # tunable hyperparameter
 OUTPUT_SIZE = 3  # N_categories: winterhome, summerhome, migrating
 # Optimizer hyperparameters
-LEARNING_RATE = 0.005  # 0.01
+LEARNING_RATE = 0.001
 # Initialize the Loss function
 criterion = nn.CrossEntropyLoss()
 
@@ -53,11 +54,16 @@ class Model(nn.Module):
         # self.model = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
-    def forward(self, x):
-        x = x.unsqueeze(2)
-        out, hidden = self.model(x)
-        out = self.fc(out[:, -1, :])
-        return out
+    def forward(self, x, lengths):
+        # Pack the sequences into a PackedSequence object
+        packed_inputs = nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True)
+        # Pass the packed sequences through the RNN
+        packed_outputs, _ = self.model(packed_inputs)
+        # Unpack the sequences
+        outputs, _ = nn.utils.rnn.pad_packed_sequence(packed_outputs, batch_first=True)
+        # Pass the outputs through a linear layer to get the final predictions
+        logits = self.fc(outputs)
+        return logits
 
 
 def Optimizer(model):
@@ -90,6 +96,8 @@ if __name__ == "__main__":
     #########################################
     train_losses = []
     test_losses = []
+    train_accuracies = []
+    test_accuracies = []
     ###################################
     ###################################
     ## Perform the Training and Testing
@@ -99,7 +107,7 @@ if __name__ == "__main__":
         ###############################################
         # Load the previously saved model and optimizer
         ###############################################
-        model, optimizer = load_model(model, optimizer)
+        model, optimizer, epoch = load_model(model, optimizer)
         ##################################################
         ## Load the custom AnimalPathsDataset testing data
         ##################################################
@@ -129,7 +137,7 @@ if __name__ == "__main__":
         # Train and test for each epoch
         for epoch in epoch_range:
             # Run the training process
-            train_losses = train_process(
+            train_losses, train_accuracy = train_process(
                 optimizer,
                 model,
                 criterion,
@@ -140,7 +148,7 @@ if __name__ == "__main__":
                 epoch,
             )
             # Run the testing process
-            test_losses = test_process(
+            test_losses, test_accuracy = test_process(
                 model,
                 criterion,
                 test_loader,
@@ -152,9 +160,13 @@ if __name__ == "__main__":
             # Find the average train/test losses
             train_loss = mean(train_losses)
             test_loss = mean(test_losses)
-            # Keep track of stats for each epoch
+            # Keep track of average loss for each epoch
             avg_train_losses.append(train_loss)
             avg_test_losses.append(test_loss)
+            # Keep track of accuracy for each epoch
+            train_accuracies.append(train_accuracy)
+            test_accuracies.append(test_accuracy)
+            # Keep track of each completed epoch index
             completed_epochs.append(epoch)
             print("[Epoch {}] Avg. Train Loss: {}".format(epoch, train_loss))
             print("[Epoch {}] Avg. Test Loss: {}".format(epoch, test_loss))
@@ -162,6 +174,7 @@ if __name__ == "__main__":
         ## Output model performance evaluation chart across all epochs
         ##############################################################
         plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
+        plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
 
     ##########
     ## The End
