@@ -12,6 +12,10 @@ from utils import (
     make_csv_output_rows,
 )
 
+# Specify the epochs interval
+# to save an output CSV of predictions
+SAVE_PREDICTIONS_EVERY = 10  # epochs
+
 
 def test(model, criterion, labels_tensor, inputs_tensor):
     # Get the sequence length of this input
@@ -107,9 +111,10 @@ def test_process(
     if final_test == True:
         outname = "final_test.csv"
     else:
-        outname = "epoch_{}.csv".format(epoch)
-    # Write the predicted poses to an output CSV
-    # in the submission format expected
-    write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
+        outname = "epochs/epoch_{}.csv".format(epoch)
+    # Check if an output CSV should be produced this epoch
+    if (epoch % SAVE_PREDICTIONS_EVERY == 0) or (final_test == True):
+        # Write the predicted path segmentation labels to an output CSV
+        write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
     # Return the test losses and accuracy from this epoch
     return test_losses, test_accuracy

@@ -7,7 +7,7 @@ from matplotlib.ticker import MaxNLocator
 SAVED_MODEL_PATH = "results/model+optimizer.pth"
 ACCURACY_PLOT_PATH = "figures/accuracy.png"
 LOSS_PLOT_PATH = "figures/loss.png"
-PREDICTIONS_DIR = "predictions/epochs/"
+PREDICTIONS_DIR = "predictions/"
 
 
 def save_model(epoch, model, optimizer):
@@ -44,7 +44,7 @@ def write_output_csv(outname, predictions, fieldnames):
     """
     csv_name = "predictions_" + outname
     output_csv = PREDICTIONS_DIR + csv_name
-    print("Write the predicted output to: {}...".format(output_csv))
+    print("Write the predictions output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(fieldnames)
