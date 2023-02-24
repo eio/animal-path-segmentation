@@ -39,8 +39,8 @@ This is loaded by PyTorch DataLoaders in `AnimalDataLoaders.py`
 All functions that save files can be found in `save_and_load.py`
 
 - During training, a saved `model+optimizer.pth` file is updated on each completed epoch and saved inside of `results/`. During testing, when the script is run with `-l`, this is the file that is loaded.
-- The final loss plot for all training epochs is stored in `figures/`.
-- Predictions for each training epoch are stored in `predictions/`. During testing, when the script is run with `-l`, the final test predictions are stored as `predictions_final_test.csv`
+- The final loss and accuracy plots for all epochs are stored in `figures/`.
+- Predictions for each training epoch are stored in `predictions/epochs/`. During testing, when the script is run with `-l`, the final test predictions are stored as `predictions/predictions_final_test.csv`
 
 # Utilities
 
