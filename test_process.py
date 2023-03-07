@@ -14,7 +14,7 @@ from utils import (
 
 # Specify the epochs interval
 # to save an output CSV of predictions
-SAVE_PREDICTIONS_EVERY = 10  # epochs
+SAVE_PREDICTIONS_EVERY = 20  # epochs
 
 
 def test(model, criterion, labels_tensor, inputs_tensor):

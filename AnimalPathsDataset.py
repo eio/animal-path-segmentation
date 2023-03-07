@@ -1,8 +1,10 @@
 # Code adapted from:
 # https://pytorch.org/tutorials/recipes/recipes/custom_dataset_transforms_loader.html
+import math
 import torch
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 # Numerical path segment labels
 WINTER_HOME = 0
@@ -11,14 +13,18 @@ MIGRATING = 2
 # Keep track of all possible categories
 ALL_CATEGORIES = ["WINTER_HOME", "SUMMER_HOME", "MIGRATING"]
 # Define strings for the column/feature names used
-IDENTIFIER = "individual-local-identifier"  # +1 feature
+IDENTIFIER = "individual-local-identifier"
 LATITUDE = "location-lat"  # +1 feature
 LONGITUDE = "location-long"  # +1 feature
-TIMESTAMP = "timestamp"  # # +4 features (year, month, day, unixtime)
+TIMESTAMP = "timestamp"  # # +6 features (Y, M, D, unix, sin, cos)
 YEAR = "Year"
 MONTH = "Month"
 DAY = "Day"
 UNIXTIME = "UnixTime"
+SINTIME = "SinTime"
+COSTIME = "CosTime"
+# Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
+SECONDS_IN_YEAR = 31_536_000
 # Used for the output CSV
 OUTPUT_FIELDNAMES = [
     "Correct",
@@ -31,9 +37,11 @@ OUTPUT_FIELDNAMES = [
     MONTH,
     DAY,
     UNIXTIME,
+    SINTIME,
+    COSTIME,
 ]
 # # Keep track of total number of input features
-# N_FEATURES = 7
+# N_FEATURES = 8
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -90,20 +98,44 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = self.transform_time_features(df)
         return df
 
+    def cyclic_time(self, dt):
+        """
+        Use a datetime input to calculate the
+        number of seconds since the start of the year and the period of the cycle
+        (e.g., number of seconds in a day, a week, or a year).
+        Return the sine and cosine values of the angle between the time and the cycle.
+        """
+        # Build the datetime for the start of the timestamp's year
+        start_of_year = datetime(dt.year, 1, 1)
+        # Calculate the number of seconds since the start of the timestamp's year
+        seconds_since_year_start = (dt - start_of_year).total_seconds()
+        # Set the period of the cycle to the total number of seconds in a year
+        period = SECONDS_IN_YEAR
+        # Caculate cylic time
+        angle = 2 * math.pi * seconds_since_year_start / period
+        sin_time = math.sin(angle)
+        cos_time = math.cos(angle)
+        return sin_time, cos_time
+
     def transform_time_features(self, df):
         """
         Return vector of numerical time features:
-        integers for date values, and float for Unix time
+        - integers for Year, Month, and Day values
+        - float for Unix time
+        - floats for sin/cos time (cyclical)
         """
         df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
         df[YEAR] = df[TIMESTAMP].dt.year
         df[MONTH] = df[TIMESTAMP].dt.month
         df[DAY] = df[TIMESTAMP].dt.day
         df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
+        # Represent the time as a cyclic feature for seasons
+        df[[SINTIME, COSTIME]] = df[TIMESTAMP].apply(
+            lambda x: pd.Series(self.cyclic_time(x))
+        )
         # Delete the original "timestamp" column
         del df[TIMESTAMP]
-        # TODO: Account for cyclical seasons in a year
-        # sin/cos applied to `seconds_since_NYE` to capture circularity
+        # Return the transformed dataframe
         return df
 
     def get_segment_label(self, lat):

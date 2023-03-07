@@ -38,11 +38,10 @@ def load_model(model, optimizer):
     return model, optimizer, saved_state["epoch"]
 
 
-def write_output_csv(outname, predictions, fieldnames):
+def write_output_csv(csv_name, predictions, fieldnames):
     """
     Write model predictions to output CSV
     """
-    csv_name = "predictions_" + outname
     output_csv = PREDICTIONS_DIR + csv_name
     print("Write the predictions output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:

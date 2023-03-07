@@ -26,7 +26,7 @@ N_EPOCHS = 200
 BATCH_SIZE = 1
 LOG_INTERVAL = 1
 # Model parameters
-INPUT_SIZE = 6  # number of features / covariates
+INPUT_SIZE = 8  # number of features / covariates
 HIDDEN_SIZE = 10  # tunable hyperparameter
 OUTPUT_SIZE = 3  # N_categories: winterhome, summerhome, migrating
 # Optimizer hyperparameters
