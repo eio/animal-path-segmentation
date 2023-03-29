@@ -12,10 +12,10 @@ SHUFFLE = False
 # Default batch size
 BATCH_SIZE = 1
 # Setup paths for accessing data
-TRAIN_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
+TRAIN_CSV = "data/Cranes_processed.csv"
 # TODO: these should be different, of course
-VALIDATION_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
-FINAL_TEST_CSV = "data/ICARUS Mongolia cuckoos Nymba.csv"
+VALIDATION_CSV = "data/Cranes_processed.csv"
+FINAL_TEST_CSV = "data/Cranes_processed.csv"
 
 
 def build_data_loaders(batch_size=BATCH_SIZE):

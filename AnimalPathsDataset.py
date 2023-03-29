@@ -7,15 +7,15 @@ import pandas as pd
 from datetime import datetime
 
 # Numerical path segment labels
-WINTER_HOME = 0
-SUMMER_HOME = 1
-MIGRATING = 2
+STOPOVER = 0
+SPRING = 1
+FALL = 2
 # Keep track of all possible categories
-ALL_CATEGORIES = ["WINTER_HOME", "SUMMER_HOME", "MIGRATING"]
+ALL_CATEGORIES = ["Stopover", "Spring", "Fall"]
 # Define strings for the column/feature names used
-IDENTIFIER = "individual-local-identifier"
-LATITUDE = "location-lat"  # +1 feature
-LONGITUDE = "location-long"  # +1 feature
+IDENTIFIER = "individual_id"
+LATITUDE = "lat"  # +1 feature
+LONGITUDE = "lon"  # +1 feature
 TIMESTAMP = "timestamp"  # # +6 features (Y, M, D, unix, sin, cos)
 YEAR = "Year"
 MONTH = "Month"
@@ -23,6 +23,10 @@ DAY = "Day"
 UNIXTIME = "UnixTime"
 SINTIME = "SinTime"
 COSTIME = "CosTime"
+# TODO: encode the Species and Confidence
+# SPECIES = "species"
+# CONFIDENCE = "Confidence"
+STATUS = "Status"  # The Label
 # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
 SECONDS_IN_YEAR = 31_536_000
 # Used for the output CSV
@@ -88,7 +92,16 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Load the animal location data
         df = pd.read_csv(csv_file)
         # Drop all columns except the ones we care about
-        df = df[[IDENTIFIER, LATITUDE, LONGITUDE, TIMESTAMP]]
+        df = df[
+            [
+                IDENTIFIER,
+                LATITUDE,
+                LONGITUDE,
+                TIMESTAMP,
+                # CONFIDENCE,
+                STATUS,
+            ]
+        ]
         # Drop rows with missing data
         df = df[df[LATITUDE].notna()]
         df = df[df[LONGITUDE].notna()]
@@ -138,20 +151,19 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Return the transformed dataframe
         return df
 
-    def get_segment_label(self, lat):
-        # TODO: this function should be removed
-        # once properly labeled data is acquired.
-        # This is an Extremely Naive Approach to
-        # animal range residency estimation.
-        if lat < 0:
-            # South of equator, assume winter home range
-            return WINTER_HOME
-        elif lat > 40:
-            # North of 40 N, assume summer home range
-            return SUMMER_HOME
+    def get_segment_label(self, status):
+        """
+        Map the status field's string value
+        to an integer representing that status
+        """
+        if status == "Stopover":
+            return STOPOVER
+        elif status == "Spring":
+            return SPRING
+        elif status == "Fall":
+            return FALL
         else:
-            # Otherwise, assume migration-in-progress
-            return MIGRATING
+            print("No label found.")
 
     def __getitem__(self, idx):
         """
@@ -164,11 +176,11 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         identifier = self.individual_ids[idx]
         # Get the full trajectory of time-series data for this individual
         trajectory = self.trajectories.get_group(identifier).reset_index(drop=True)
-        # Delete the ID column, since we don't want it as a data feature
+        # Get the path segmentation labels
+        labels = trajectory[STATUS].apply(self.get_segment_label)
+        # Delete the ID and Status columns, since we don't want them as data features
         del trajectory[IDENTIFIER]
-        # TODO: Remove fake labels
-        # Generate fake labels dataframe
-        labels = trajectory[LATITUDE].apply(self.get_segment_label)
+        del trajectory[STATUS]
         # TODO: Normalize
         # 0 mean and standard deviation
         # self.normalize(trajectory)
