@@ -27,7 +27,7 @@ def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
     # Compute loss
     # output_tensor.shape = [batch_size, seq_length, num_Categories]
     # labels_tensor.shape = [batch_size, seq_length]
-    loss = criterion(output_tensor.view(-1, 3), labels_tensor.view(-1))
+    loss = criterion(output_tensor.view(-1, 4), labels_tensor.view(-1))
     # Backward pass and optimize
     loss.backward()
     optimizer.step()

@@ -28,7 +28,7 @@ LOG_INTERVAL = 1
 # Model parameters
 INPUT_SIZE = 8  # number of features / covariates
 HIDDEN_SIZE = 10  # tunable hyperparameter
-OUTPUT_SIZE = 3  # N_categories: stopover, spring, fall
+OUTPUT_SIZE = 4  # N_categories: ["Spring", "Summer", "Fall", "Winter"]
 # Optimizer hyperparameters
 LEARNING_RATE = 0.001
 # Initialize the Loss function

@@ -7,11 +7,12 @@ import pandas as pd
 from datetime import datetime
 
 # Numerical path segment labels
-STOPOVER = 0
-SPRING = 1
+SPRING = 0
+SUMMER = 1
 FALL = 2
+WINTER = 3
 # Keep track of all possible categories
-ALL_CATEGORIES = ["Stopover", "Spring", "Fall"]
+ALL_CATEGORIES = ["Spring", "Summer", "Fall", "Winter"]
 # Define strings for the column/feature names used
 IDENTIFIER = "individual_id"
 LATITUDE = "lat"  # +1 feature
@@ -25,8 +26,9 @@ SINTIME = "SinTime"
 COSTIME = "CosTime"
 # TODO: encode the Species and Confidence
 # SPECIES = "species"
-# CONFIDENCE = "Confidence"
-STATUS = "Status"  # The Label
+# STOPOVER = "stopover"
+# CONFIDENCE = "confidence"
+STATUS = "status"  # the segmentation label
 # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
 SECONDS_IN_YEAR = 31_536_000
 # Used for the output CSV
@@ -156,12 +158,14 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         Map the status field's string value
         to an integer representing that status
         """
-        if status == "Stopover":
-            return STOPOVER
-        elif status == "Spring":
+        if status == "Spring":
             return SPRING
+        elif status == "Summer":
+            return SUMMER
         elif status == "Fall":
             return FALL
+        elif status == "Winter":
+            return WINTER
         else:
             print("No label found.")
 
