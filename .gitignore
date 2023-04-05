@@ -3,3 +3,4 @@ __pycache__/
 __archive/
 results/*.pth
 predictions/epochs/*.csv
+data/preprocessing/*.csv
