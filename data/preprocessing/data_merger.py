@@ -173,8 +173,9 @@ def add_status_label_to_events(df_events, grouped_labels):
     """
     print("Adding `Status` label to events...")
     # Get the earliest and latest events, based on `timestamp`
-    earliest_timestamp = df_events.timestamp.min()
-    latest_timestamp = df_events.timestamp.max()
+    # rounding to the day for matching on label `Date`
+    earliest_timestamp = df_events.timestamp.min().floor("D")
+    latest_timestamp = df_events.timestamp.max().floor("D")
 
     # Add status label to each event
     def add_status(event):
@@ -228,10 +229,7 @@ if __name__ == "__main__":
     # Drop exact duplicate rows
     df_labels.drop_duplicates(inplace=True)
     df_labels.to_csv(CSV_OUT + "DataFrame_States.csv", index=False)
-
-    print("Transformed state labels:")
-    print(df_labels)
-    print()
+    # print("Transformed state labels:\n{}\n".format(df_labels))
 
     # Load the locally stored CSV - Events data
     df_events = load_events_data()
@@ -245,9 +243,12 @@ if __name__ == "__main__":
     # df_events.loc[:, "stopover"] = 0
     # df_events.loc[:, "confidence"] = 1
     # df_events.loc[:, "status"] = None
+
     # Add the labels to the events data
     df = add_status_label_to_events(df_events, grouped_labels)
+
     # Output the data in CSV format
+    print("Saving processed data to `output/`...")
     df.to_csv(CSV_OUT + "PROCESSED_OUTPUT.csv", index=False)
 
     print("Done.")
