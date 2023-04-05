@@ -39,6 +39,11 @@ Unique species with labels:
 	['Anthropoides paradiseus', 'Anthropoides virgo', 'Grus grus', 'Grus nigricollis', 'Grus vipio']
     ...and also ['Balearica pavonina'] but there's "Not enough data" for any of those records.
 
+To inspect records for an individual:
+
+	df_labels.loc[df_labels.Individual == 4125423]
+
+
 ## Events
 
 Important headers:

@@ -1,10 +1,11 @@
 import pandas as pd
+from tqdm.auto import tqdm
 
 # Local scripts
 from utils import *
 
-# Time delta shortcut
-ONE_DAY = pd.Timedelta(1, "d")
+# Initialize progress bar for Dataframe actions
+tqdm.pandas()
 
 
 def build_confidence_column(df):
@@ -44,6 +45,8 @@ def build_states_dataframe(df):
     into a transformed dataframe with explicit and discrete states
     """
     print("Transforming labels data...")
+    # Time delta shortcut
+    ONE_DAY = pd.Timedelta(1, "d")
 
     # Function to add implicit Winter or Summer states
     def make_implicit_label(label):
@@ -196,25 +199,29 @@ def add_status_label_to_events(df_events, grouped_labels):
                 end = latest_timestamp
             # Check if event timestamp correlates to this state's timerange
             if timestamp >= start and timestamp <= end:
-                # Update the label and confidence factor for this event
-                event.confidence = s["confidence"]
-                event.status = s["label"]
                 # Change the Stopover flag if relevant
                 if s["label"] == "Stopover":
-                    # Having a stopover flag will allow us to
-                    # remove the state later on in the process
+                    # Stopovers are considered as a secondary state
+                    # so rather than changing the seasonal label,
+                    # we simply flag that the event is a stopover
                     event.stopover = 1
-                # Break loop now that we found our match
-                break
-        # TODO: handle when s["start"] = None or s["end"] = None
+                else:
+                    # Update the label and confidence factor for this event
+                    event.status = s["label"]
+                    event.confidence = s["confidence"]
+                    # TODO: early exiting could miss stopovers...
+                    # but the current implementation is very inefficient.
+                    # Probaly, stopovers should be added first.
+                    # break
+        # Check that a status was added
         if event.status == None:
             print("\nNo status match:\n", event)
         # Return the updated event row
         return event
 
-    # Add status to each event in the dataframe,
-    # then returned the transformed structure
-    return df_events.apply(add_status, axis=1)
+    # Add status to each event in the dataframe (with progress bar)
+    # then return the transformed structure
+    return df_events.progress_apply(add_status, axis=1)
 
 
 if __name__ == "__main__":
@@ -248,7 +255,8 @@ if __name__ == "__main__":
     df = add_status_label_to_events(df_events, grouped_labels)
 
     # Output the data in CSV format
-    print("Saving processed data to `output/`...")
-    df.to_csv(CSV_OUT + "PROCESSED_OUTPUT.csv", index=False)
+    outfile = CSV_OUT + "PROCESSED_OUTPUT.csv"
+    print("Saving processed data to `{}`...".format(outfile))
+    df.to_csv(outfile, index=False)
 
     print("Done.")
