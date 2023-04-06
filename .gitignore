@@ -3,4 +3,7 @@ __pycache__/
 __archive/
 results/*.pth
 predictions/epochs/*.csv
+data/preprocessing/*.txt
 data/preprocessing/*.csv
+data/preprocessing/output/*.csv
+data/preprocessing/segmentations/
