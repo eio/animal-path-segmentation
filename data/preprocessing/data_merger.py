@@ -111,8 +111,8 @@ def build_states_dataframe(df):
             confidence = label.Confidence
             # Initialize the state
             state = {
-                "start": None,
-                "end": None,
+                "start": pd.NaT,
+                "end": pd.NaT,
                 "confidence": confidence,
                 "label": clean_status(status),
                 "individual": individual,
@@ -192,10 +192,13 @@ def add_status_label_to_events(df_events, grouped_labels):
         for index, s in states.iterrows():
             start = s["start"]
             end = s["end"]
-            # TODO: this is maybe not safe
-            if start == None:
+            # Check if start/end values are empty/pd.NaT
+            # and replace them with earliest/latest event timestamps.
+            # TODO: this is probably not safe...
+            # ...should really use earliest event *per-individual*
+            if pd.isna(start) or start == None:
                 start = earliest_timestamp
-            if end == None:
+            if pd.isna(end) or end == None:
                 end = latest_timestamp
             # Check if event timestamp correlates to this state's timerange
             if timestamp >= start and timestamp <= end:
