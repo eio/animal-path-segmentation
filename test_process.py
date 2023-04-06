@@ -29,6 +29,8 @@ def test(model, criterion, labels_tensor, inputs_tensor):
     # Compute loss
     # output_tensor.shape = [batch_size, seq_length, num_Categories]
     # labels_tensor.shape = [batch_size, seq_length]
+    # NOTE: output_tensor.view(-1, X) reshapes the tensor to have X columns
+    # which should match the OUTPUT_SIZE defined in `run_model.py`
     loss = criterion(output_tensor.view(-1, 4), labels_tensor.view(-1))
     # Return the prediction and loss
     return output_tensor, loss.item()
