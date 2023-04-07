@@ -6,13 +6,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-# Numerical path segment labels
-SPRING = 0
-SUMMER = 1
-FALL = 2
-WINTER = 3
-# Keep track of all possible categories
-ALL_CATEGORIES = ["Spring", "Summer", "Fall", "Winter"]
+# Number of possible labels
+N_CATEGORIES = 4
+# One-hot encoding for seasonal labels
+SEASON_LABELS = {
+    "Winter": [1, 0, 0, 0],
+    "Spring": [0, 1, 0, 0],
+    "Summer": [0, 0, 1, 0],
+    "Autumn": [0, 0, 0, 1],
+}
 # Define strings for the column/feature names used
 IDENTIFIER = "individual_id"
 LATITUDE = "lat"  # +1 feature
@@ -24,11 +26,11 @@ DAY = "Day"
 UNIXTIME = "UnixTime"
 SINTIME = "SinTime"
 COSTIME = "CosTime"
-# TODO: encode the Species and Confidence
+# TODO: encode the Species
 # SPECIES = "species"
 # STOPOVER = "stopover"
+STATUS = "status"  # the seasonal segmentation label
 # CONFIDENCE = "confidence"
-STATUS = "status"  # the segmentation label
 # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
 SECONDS_IN_YEAR = 31_536_000
 # Used for the output CSV
@@ -101,6 +103,8 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
                 LONGITUDE,
                 TIMESTAMP,
                 # CONFIDENCE,
+                # STOPOVER,
+                # SPECIES,
                 STATUS,
             ]
         ]
@@ -109,8 +113,13 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = df[df[LONGITUDE].notna()]
         df = df[df[TIMESTAMP].notna()]
         df = df[df[IDENTIFIER].notna()]
+        # Replace 'Fall' with 'Autumn' because OCD
+        df[STATUS] = df[STATUS].replace("Fall", "Autumn")
         # Expand the time features to numerical values
         df = self.transform_time_features(df)
+        # # Print some stats about the data
+        # print("Label stats:\n{}".format(df[STATUS].value_counts()))
+        # print("Individual stats:\n{}".format(df[IDENTIFIER].value_counts()))
         return df
 
     def cyclic_time(self, dt):
@@ -153,22 +162,6 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Return the transformed dataframe
         return df
 
-    def get_segment_label(self, status):
-        """
-        Map the status field's string value
-        to an integer representing that status
-        """
-        if status == "Spring":
-            return SPRING
-        elif status == "Summer":
-            return SUMMER
-        elif status == "Fall":
-            return FALL
-        elif status == "Winter":
-            return WINTER
-        else:
-            print("No label found.")
-
     def __getitem__(self, idx):
         """
         Build the features vector and label
@@ -180,8 +173,8 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         identifier = self.individual_ids[idx]
         # Get the full trajectory of time-series data for this individual
         trajectory = self.trajectories.get_group(identifier).reset_index(drop=True)
-        # Get the path segmentation labels
-        labels = trajectory[STATUS].apply(self.get_segment_label)
+        # Get the seasonal segmentation labels
+        labels = trajectory[STATUS]
         # Delete the ID and Status columns, since we don't want them as data features
         del trajectory[IDENTIFIER]
         del trajectory[STATUS]
@@ -208,7 +201,11 @@ class ToTensor(object):
         )
         # Convert relevant data to tensors with dtype == torch.float32
         features = torch.from_numpy(features.values).type(torch.float)
-        label = torch.from_numpy(label.values).type(torch.float)
+
+        # Convert the string labels to numerical labels
+        num_labels = np.array([SEASON_LABELS[l] for l in label])
+        label = torch.from_numpy(num_labels).type(torch.float)
+
         return {
             "id": identifier,
             "features": features,

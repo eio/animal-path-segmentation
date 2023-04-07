@@ -1,10 +1,15 @@
 import math
-import torch
 from datetime import datetime
 from numpy import array as np_array
+from torch import tensor, eye, max as torch_max
 
 # Local scripts
-from AnimalPathsDataset import ALL_CATEGORIES
+from AnimalPathsDataset import SEASON_LABELS, N_CATEGORIES
+
+# Reverse SEASON_LABELS dictionary so that onehot tuples are keys
+ONEHOT_LABELS = {tuple(v): k for k, v in SEASON_LABELS.items()}
+# Create identity matrix
+ONEHOT_MATRIX = eye(N_CATEGORIES)
 
 
 class color:
@@ -21,27 +26,46 @@ class color:
     END = "\033[0m"
 
 
+def onehot_to_string(onehot):
+    """
+    Convert the one-hot encoded season tensor
+    to the corresponding season string label
+    """
+    key = tuple(onehot.tolist())
+    return ONEHOT_LABELS[key]
+
+
 def categories_from_label(labels_tensor):
     """
-    Convert the integer labels_tensor
-    to a list of the respective category strings
+    Convert the labels_tensor to a list of the
+    respective seasonal category strings
     (where labels_tensor.shape = [batch_size, seq_length])
     """
-    # Map label integers to label strings
-    categories = [ALL_CATEGORIES[i] for i in labels_tensor.flatten().int()]
+    # Map label tensors to label strings
+    categories = []
+    for sequence in labels_tensor:
+        for label in sequence:
+            # Convert the one-hot tensor to a string label
+            categories.append(onehot_to_string(label))
     return np_array(categories)
 
 
 def categories_from_output(output_tensor):
     """
-    Convert from "likelihood" output_tensor
+    Convert from probability / "likelihood" output_tensor
     to a list of the predicted category strings
     (where output_tensor.shape = [batch_size, seq_length, num_Categories])
     """
     # Get max values and indices along the last (i.e. Categories) dimension
-    max_values, max_indices = torch.max(output_tensor, dim=-1)
+    max_values, max_indices = torch_max(output_tensor, dim=-1)
     # Map max indices to labels
-    categories = [ALL_CATEGORIES[i] for i in max_indices.flatten()]
+    categories = []
+    for sequence in max_indices:
+        for index in sequence:
+            # Get the one-hot tensor from the most likely index value
+            label = ONEHOT_MATRIX[index]
+            # Convert the one-hot tensor to a string label
+            categories.append(onehot_to_string(label))
     return np_array(categories)
 
 
@@ -79,7 +103,7 @@ def make_csv_output_rows(is_correct, guess, label, identifier, features_tensor):
     # Iterate over data and features, building and saving each row
     for i, (d, f) in enumerate(zip(data, features)):
         # Combine the data into a single list for the CSV output row
-        row = list(d) + list(identifier) + f.tolist()
+        row = list(d) + identifier.tolist() + f.tolist()
         rows.append(row)
     # Return the list of output rows
     return rows

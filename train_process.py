@@ -4,6 +4,7 @@ from torch import tensor, long as torch_long
 # Local scripts
 from save_and_load import save_model
 from utils import color, time_since, categories_from_label, categories_from_output
+from AnimalPathsDataset import N_CATEGORIES
 
 
 def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
@@ -22,14 +23,15 @@ def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
     seq_length = tensor([inputs_tensor.shape[1]])
     # Forward pass
     output_tensor = model(inputs_tensor, seq_length)
-    # Loss function expects labels_tensor input to be torch.Long dtype
-    labels_tensor = labels_tensor.to(torch_long)
     # Compute loss
     # output_tensor.shape = [batch_size, seq_length, num_Categories]
     # labels_tensor.shape = [batch_size, seq_length]
     # NOTE: output_tensor.view(-1, X) reshapes the tensor to have X columns
     # which should match the OUTPUT_SIZE defined in `run_model.py`
-    loss = criterion(output_tensor.view(-1, 4), labels_tensor.view(-1))
+    loss = criterion(
+        output_tensor.view(-1, N_CATEGORIES),
+        labels_tensor.view(-1, N_CATEGORIES),
+    )
     # Backward pass and optimize
     loss.backward()
     optimizer.step()

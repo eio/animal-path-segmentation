@@ -19,6 +19,7 @@ FINAL_TEST_CSV = "data/Cranes_processed.csv"
 
 
 def build_data_loaders(batch_size=BATCH_SIZE):
+    print("Building datasets...")
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
@@ -29,6 +30,7 @@ def build_data_loaders(batch_size=BATCH_SIZE):
         csv_file=VALIDATION_CSV,
         transform=Compose([APD.ToTensor()]),
     )
+    print("Building data loaders...")
     # Build the Train loader
     # https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
     train_loader = torch.utils.data.DataLoader(
@@ -50,10 +52,12 @@ def build_data_loaders(batch_size=BATCH_SIZE):
 
 def build_final_test_data_loader(batch_size=BATCH_SIZE):
     """ Final, unlabeled, test dataset """
+    print("Building dataset...")
     dataset = APD.AnimalPathsDataset(
         csv_file=FINAL_TEST_CSV,
         transform=Compose([APD.ToTensor()]),
     )
+    print("Building data loader...")
     loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,

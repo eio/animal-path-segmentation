@@ -2,7 +2,7 @@ from numpy import mean, count_nonzero as count_true
 from torch import no_grad, tensor, long as torch_long
 
 # Local scripts
-from AnimalPathsDataset import OUTPUT_FIELDNAMES
+from AnimalPathsDataset import N_CATEGORIES, OUTPUT_FIELDNAMES
 from save_and_load import write_output_csv
 from utils import (
     color,
@@ -24,14 +24,15 @@ def test(model, criterion, labels_tensor, inputs_tensor):
     seq_length = tensor([inputs_tensor.shape[1]])
     # Forward pass
     output_tensor = model(inputs_tensor, seq_length)
-    # Loss function expects labels_tensor input to be torch.Long dtype
-    labels_tensor = labels_tensor.to(torch_long)
     # Compute loss
     # output_tensor.shape = [batch_size, seq_length, num_Categories]
     # labels_tensor.shape = [batch_size, seq_length]
     # NOTE: output_tensor.view(-1, X) reshapes the tensor to have X columns
     # which should match the OUTPUT_SIZE defined in `run_model.py`
-    loss = criterion(output_tensor.view(-1, 4), labels_tensor.view(-1))
+    loss = criterion(
+        output_tensor.view(-1, N_CATEGORIES),
+        labels_tensor.view(-1, N_CATEGORIES),
+    )
     # Return the prediction and loss
     return output_tensor, loss.item()
 

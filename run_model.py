@@ -8,10 +8,11 @@ import torch.optim as optim
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
-from save_and_load import load_model, plot_loss, plot_accuracy
 from utils import start_script, finish_script
+from save_and_load import load_model, plot_loss, plot_accuracy
 from train_process import train_process
 from test_process import test_process
+from AnimalPathsDataset import N_CATEGORIES
 from AnimalDataLoaders import (
     build_data_loaders,
     build_final_test_data_loader,
@@ -22,13 +23,13 @@ from AnimalDataLoaders import (
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
 # Setup tunable constants
-N_EPOCHS = 10
+N_EPOCHS = 5
 BATCH_SIZE = 1
 LOG_INTERVAL = 1
 # Model parameters
 INPUT_SIZE = 8  # number of features / covariates
 HIDDEN_SIZE = 10  # tunable hyperparameter
-OUTPUT_SIZE = 4  # N_categories: ["Spring", "Summer", "Fall", "Winter"]
+OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
 # Optimizer hyperparameters
 LEARNING_RATE = 0.001
 # Initialize the Loss function
@@ -64,6 +65,9 @@ class Model(nn.Module):
         # Pass the outputs through a linear layer to get the final predictions
         logits = self.fc(outputs)
         return logits
+        # # Apply softmax activation function to convert logits to probabilities
+        # probs = nn.functional.softmax(logits, dim=-1)
+        # return probs
 
 
 def Optimizer(model):
