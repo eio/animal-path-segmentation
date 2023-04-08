@@ -18,10 +18,10 @@ from AnimalDataLoaders import (
     build_final_test_data_loader,
 )
 
-
 # Check for CUDA / GPU Support
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
+
 # Setup tunable constants
 N_EPOCHS = 5
 BATCH_SIZE = 1

@@ -23,12 +23,22 @@ def build_data_loaders(batch_size=BATCH_SIZE):
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
-        transform=Compose([APD.ToTensor()]),
+        transform=Compose(
+            [
+                APD.NormalizeFeatures(),
+                APD.ToTensor(),
+            ]
+        ),
     )
     # Create the Test dataset
     validation_dataset = APD.AnimalPathsDataset(
         csv_file=VALIDATION_CSV,
-        transform=Compose([APD.ToTensor()]),
+        transform=Compose(
+            [
+                APD.NormalizeFeatures(),
+                APD.ToTensor(),
+            ]
+        ),
     )
     print("Building data loaders...")
     # Build the Train loader
@@ -55,7 +65,12 @@ def build_final_test_data_loader(batch_size=BATCH_SIZE):
     print("Building dataset...")
     dataset = APD.AnimalPathsDataset(
         csv_file=FINAL_TEST_CSV,
-        transform=Compose([APD.ToTensor()]),
+        transform=Compose(
+            [
+                APD.NormalizeFeatures(),
+                APD.ToTensor(),
+            ]
+        ),
     )
     print("Building data loader...")
     loader = torch.utils.data.DataLoader(

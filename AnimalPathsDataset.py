@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import pandas as pd
 from datetime import datetime
+from sklearn.preprocessing import StandardScaler
 
 # Number of possible labels
 N_CATEGORIES = 4
@@ -19,20 +20,30 @@ SEASON_LABELS = {
 IDENTIFIER = "individual_id"
 LATITUDE = "lat"  # +1 feature
 LONGITUDE = "lon"  # +1 feature
-TIMESTAMP = "timestamp"  # # +6 features (Y, M, D, unix, sin, cos)
-YEAR = "Year"
-MONTH = "Month"
-DAY = "Day"
-UNIXTIME = "UnixTime"
-SINTIME = "SinTime"
-COSTIME = "CosTime"
-# TODO: encode the Species
+# Original time column
+TIMESTAMP = "timestamp"
+# Derived time features
+YEAR = "Year"  # +1 feature
+MONTH = "Month"  # +1 feature
+DAY = "Day"  # +1 feature
+UNIXTIME = "UnixTime"  # +1 feature
+SINTIME = "SinTime"  # +1 feature
+COSTIME = "CosTime"  # +1 feature
+# Group time features for normalization
+TIME_FEATURES = [
+    YEAR,
+    MONTH,
+    DAY,
+    UNIXTIME,
+    SINTIME,
+    COSTIME,
+]
+# TODO:
+#   + species and stopover features
 # SPECIES = "species"
 # STOPOVER = "stopover"
 STATUS = "status"  # the seasonal segmentation label
 # CONFIDENCE = "confidence"
-# Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
-SECONDS_IN_YEAR = 31_536_000
 # Used for the output CSV
 OUTPUT_FIELDNAMES = [
     "Correct",
@@ -63,6 +74,8 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
             transform (callable, optional):
                 - Optional transform to be applied on a sample.
         """
+        # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
+        self.SECONDS_IN_YEAR = 31_536_000
         # Load, trim, clean, and transform the data
         self.paths_df = self.load_and_transform_data(csv_file)
         # Group the data into individual animal trajectories
@@ -134,7 +147,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Calculate the number of seconds since the start of the timestamp's year
         seconds_since_year_start = (dt - start_of_year).total_seconds()
         # Set the period of the cycle to the total number of seconds in a year
-        period = SECONDS_IN_YEAR
+        period = self.SECONDS_IN_YEAR
         # Caculate cylic time
         angle = 2 * math.pi * seconds_since_year_start / period
         sin_time = math.sin(angle)
@@ -190,6 +203,27 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         return sample
 
 
+class NormalizeFeatures(object):
+    """Normalize latitude, longitude, and timestamp features"""
+
+    def __init__(self):
+        self.scaler = StandardScaler()
+
+    def __call__(self, sample):
+        features = sample["features"]
+        # Separate latitude and longitude coordinates
+        coords = features[[LATITUDE, LONGITUDE]]
+        coords = torch.tensor(coords.values)
+        coords = torch.nn.functional.normalize(coords, dim=0)
+        features[LATITUDE] = coords[:, 0]
+        features[LONGITUDE] = coords[:, 1]
+        # Normalize the timestamp features using StandardScaler
+        features[TIME_FEATURES] = self.scaler.fit_transform(features[TIME_FEATURES])
+        # Reassign the normalized features
+        sample["features"] = features
+        return sample
+
+
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors"""
 
@@ -201,11 +235,9 @@ class ToTensor(object):
         )
         # Convert relevant data to tensors with dtype == torch.float32
         features = torch.from_numpy(features.values).type(torch.float)
-
         # Convert the string labels to numerical labels
         num_labels = np.array([SEASON_LABELS[l] for l in label])
         label = torch.from_numpy(num_labels).type(torch.float)
-
         return {
             "id": identifier,
             "features": features,
