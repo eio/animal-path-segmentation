@@ -69,19 +69,6 @@ def categories_from_output(output_tensor):
     return np_array(categories)
 
 
-def reformat_features(features, individuals):
-    """
-    Reformat features input Tensor
-    for easier interpretation in output CSV
-    """
-    # Flatten features tensor into normal Python list
-    features = list(features.numpy().flatten())
-    # Get the animal ID back from numerical representation
-    animal = int(features[0])
-    features[0] = individuals[animal]
-    return features
-
-
 def make_csv_output_rows(is_correct, guess, label, identifier, features_tensor):
     """
     Build the final output row for the predictions CSV,
