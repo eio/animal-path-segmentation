@@ -12,7 +12,7 @@ from utils import start_script, finish_script
 from save_and_load import load_model, plot_loss, plot_accuracy
 from train_process import train_process
 from test_process import test_process
-from AnimalPathsDataset import N_CATEGORIES
+from AnimalPathsDataset import N_FEATURES, N_CATEGORIES
 from AnimalDataLoaders import (
     build_data_loaders,
     build_final_test_data_loader,
@@ -23,17 +23,17 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
 
 # Setup tunable constants
-N_EPOCHS = 46
+N_EPOCHS = 100
 BATCH_SIZE = 1
 LOG_INTERVAL = 1
 # Model parameters
-INPUT_SIZE = 8  # number of features / covariates
+INPUT_SIZE = N_FEATURES  # number of features / covariates
 HIDDEN_SIZE = 10  # tunable hyperparameter
 OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
 # Optimizer hyperparameters
 INIT_LEARNING_RATE = 0.001  # == LR
 # LR Scheduler hyperparameters
-SCHEDULER_STEP = 15  # every {} epochs...
+SCHEDULER_STEP = 90  # every {} epochs...
 SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
 # Initialize the Loss function
 CRITERION = nn.CrossEntropyLoss()

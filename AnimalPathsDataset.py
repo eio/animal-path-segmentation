@@ -16,10 +16,13 @@ SEASON_LABELS = {
     "Summer": [0, 0, 1, 0],
     "Autumn": [0, 0, 0, 1],
 }
-# Define strings for the column/feature names used
+# Define strings for column/feature names
 IDENTIFIER = "individual_id"
+# Coordinates
 LATITUDE = "lat"  # +1 feature
 LONGITUDE = "lon"  # +1 feature
+# Stopover flag (binary)
+STOPOVER = "stopover"  # +1 feature
 # Original time column
 TIMESTAMP = "timestamp"
 # Derived time features
@@ -29,6 +32,16 @@ DAY = "Day"  # +1 feature
 UNIXTIME = "UnixTime"  # +1 feature
 SINTIME = "SinTime"  # +1 feature
 COSTIME = "CosTime"  # +1 feature
+################################
+### Number of input features: 9
+N_FEATURES = 9
+################################
+# TODO:
+#   + species feature
+#   + consider 'presumed' confidence factor
+# SPECIES = "species"
+# CONFIDENCE = "confidence"
+STATUS = "status"  # the seasonal segmentation label
 # Group time features for normalization
 TIME_FEATURES = [
     YEAR,
@@ -38,18 +51,13 @@ TIME_FEATURES = [
     SINTIME,
     COSTIME,
 ]
-# TODO:
-#   + species and stopover features
-# SPECIES = "species"
-# STOPOVER = "stopover"
-STATUS = "status"  # the seasonal segmentation label
-# CONFIDENCE = "confidence"
-# Used for the output CSV
+# Specify the output CSV columns
 OUTPUT_FIELDNAMES = [
     "Correct",
     "Predicted",
     "Actual",
     IDENTIFIER,
+    STOPOVER,
     LATITUDE,
     LONGITUDE,
     YEAR,
@@ -59,8 +67,6 @@ OUTPUT_FIELDNAMES = [
     SINTIME,
     COSTIME,
 ]
-# # Keep track of total number of input features
-# N_FEATURES = 8
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -112,11 +118,11 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = df[
             [
                 IDENTIFIER,
+                STOPOVER,
                 LATITUDE,
                 LONGITUDE,
                 TIMESTAMP,
                 # CONFIDENCE,
-                # STOPOVER,
                 # SPECIES,
                 STATUS,
             ]
@@ -235,7 +241,7 @@ class ToTensor(object):
         )
         # Convert relevant data to tensors with dtype == torch.float32
         features = torch.from_numpy(features.values).type(torch.float)
-        # Convert the string labels to numerical labels
+        # Convert the string labels to one-hot encoded labels
         num_labels = np.array([SEASON_LABELS[l] for l in label])
         label = torch.from_numpy(num_labels).type(torch.float)
         return {
