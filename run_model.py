@@ -23,7 +23,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
 
 # Setup tunable constants
-N_EPOCHS = 5
+N_EPOCHS = 46
 BATCH_SIZE = 1
 LOG_INTERVAL = 1
 # Model parameters
@@ -31,9 +31,12 @@ INPUT_SIZE = 8  # number of features / covariates
 HIDDEN_SIZE = 10  # tunable hyperparameter
 OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
 # Optimizer hyperparameters
-LEARNING_RATE = 0.001
+INIT_LEARNING_RATE = 0.001  # == LR
+# LR Scheduler hyperparameters
+SCHEDULER_STEP = 15  # every {} epochs...
+SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
 # Initialize the Loss function
-criterion = nn.CrossEntropyLoss()
+CRITERION = nn.CrossEntropyLoss()
 
 # Ensure deterministic behavior:
 # cuDNN uses nondeterministic algorithms which are disabled here
@@ -74,9 +77,26 @@ def Optimizer(model):
     """
     Create optimizer with specified hyperparameters
     """
-    # momentum = 0.5
-    # return optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=momentum)
-    return optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    # return optim.SGD(
+    #     model.parameters(),
+    #     lr=INIT_LEARNING_RATE,
+    #     momentum=m0.5,
+    # )
+    return optim.Adam(
+        model.parameters(),
+        lr=INIT_LEARNING_RATE,
+    )
+
+
+def Scheduler(optimizer):
+    """
+    Create learning-rate-scheduler with specified hyperparameters
+    """
+    return optim.lr_scheduler.StepLR(
+        optimizer,
+        step_size=SCHEDULER_STEP,
+        gamma=SCHEDULER_GAMMA,
+    )
 
 
 if __name__ == "__main__":
@@ -89,12 +109,15 @@ if __name__ == "__main__":
     ## Set start time to keep track of runtime
     ##########################################
     script_start = start_script()
-    #######################
-    ## Initialize the model
-    #######################
-    # Send model to GPU device (if CUDA-compatible)
+    ###############################################
+    ## Initialize the model and learning conditions
+    ###############################################
+    # Define the model (and send to GPU device, if CUDA-compatible)
     model = Model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
+    # Define the optimizer parameters
     optimizer = Optimizer(model)
+    # Define the learning rate scheduler parameters
+    scheduler = Scheduler(optimizer)
     #########################################
     ## Initialize losses for loss plot output
     #########################################
@@ -120,7 +143,7 @@ if __name__ == "__main__":
         ## Test the loaded model on the test data
         #########################################
         test_losses = test_process(
-            model, criterion, test_loader, script_start, DEVICE, LOG_INTERVAL
+            model, CRITERION, test_loader, script_start, DEVICE, LOG_INTERVAL
         )
     else:
         ###################################################
@@ -144,17 +167,19 @@ if __name__ == "__main__":
             train_losses, train_accuracy = train_process(
                 optimizer,
                 model,
-                criterion,
+                CRITERION,
                 train_loader,
                 script_start,
                 DEVICE,
                 LOG_INTERVAL,
                 epoch,
             )
+            # Update the optimizer's learning rate
+            scheduler.step()
             # Run the testing process
             test_losses, test_accuracy = test_process(
                 model,
-                criterion,
+                CRITERION,
                 test_loader,
                 script_start,
                 DEVICE,

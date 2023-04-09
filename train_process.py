@@ -43,6 +43,7 @@ def train_process(
     optimizer, model, criterion, train_loader, script_start, device, log_interval, epoch
 ):
     print("\nStart Training for Epoch #{}...".format(epoch))
+    print("\nCurrent learning rate: {}".format(optimizer.param_groups[0]["lr"]))
     # Initialize losses
     train_losses = []
     # Initialize correct prediction count
