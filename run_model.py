@@ -22,16 +22,18 @@ from AnimalDataLoaders import (
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Running with device: {}".format(DEVICE))
 
+# Script log print frequency
+LOG_INTERVAL = 1  # print every {} epochs
+
 # Setup tunable constants
 N_EPOCHS = 100
 BATCH_SIZE = 1
-LOG_INTERVAL = 1
 # Model parameters
 INPUT_SIZE = N_FEATURES  # number of features / covariates
 HIDDEN_SIZE = 64  # tunable hyperparameter
 OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
 # Optimizer hyperparameters
-INIT_LEARNING_RATE = 0.001  # == LR
+INIT_LEARNING_RATE = 0.001  # LR
 # LR Scheduler hyperparameters
 LR_FACTOR = 0.1  # decrease LR by factor of {}
 LR_PATIENCE = 10  # wait {} epochs before decreasing
