@@ -69,7 +69,7 @@ def categories_from_output(output_tensor):
     return np_array(categories)
 
 
-def make_csv_output_rows(is_correct, guess, label, identifier, features_tensor):
+def make_csv_output_rows(is_correct, guess, label, identifier, features):
     """
     Build the final output row for the predictions CSV,
     including:
@@ -77,20 +77,16 @@ def make_csv_output_rows(is_correct, guess, label, identifier, features_tensor):
     - the prediction itself (string)
     - the original label (string)
     - the "individual-local-identifier" / animal ID (string)
-    - the input features vector values
+    - the input feature values
     """
     # Initialize list of output rows
     rows = []
     # Combine first three lists into list of tuples
     data = list(zip(is_correct, guess, label))
-    # Since features_tensor has a single batch dimension,
-    # we use squeeze() to remove it and get a 2D tensor
-    # with shape (seq_length, 6)
-    features = features_tensor.squeeze(0)
     # Iterate over data and features, building and saving each row
     for i, (d, f) in enumerate(zip(data, features)):
         # Combine the data into a single list for the CSV output row
-        row = list(d) + identifier.tolist() + f.tolist()
+        row = list(d) + identifier.tolist() + f
         rows.append(row)
     # Return the list of output rows
     return rows

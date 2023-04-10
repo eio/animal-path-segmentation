@@ -52,6 +52,10 @@ def test_process(
     if epoch == None:
         final_test = True
         epoch = 1
+    # Check if an output CSV should be produced this epoch
+    WRITE_OUTPUT_CSV = False
+    if (epoch % SAVE_PREDICTIONS_EVERY == 0) or (final_test == True):
+        WRITE_OUTPUT_CSV = True
     print("\nStart Testing for Epoch {}...".format(epoch))
     # Initialize losses
     test_losses = []
@@ -84,12 +88,18 @@ def test_process(
             correct = count_true(is_correct)
             # Keep a running tally of correct guesses
             total_correct += correct
-            # Generate the CSV output rows
-            rows = make_csv_output_rows(
-                is_correct, guesses, labels, batch["id"], features
-            )
-            # Store the CSV output row for writing later
-            csv_out_rows += rows
+            # Generate CSV output rows if needed
+            if WRITE_OUTPUT_CSV:
+                # Get the NormalizeFeatures transform from the test_loader
+                normalize_transform = test_loader.dataset.transform.transforms[0]
+                # Retrieve the stored, non-normalized features
+                original_features = normalize_transform.orig_features
+                # Build the CSV output rows with predictions and input features
+                rows = make_csv_output_rows(
+                    is_correct, guesses, labels, batch["id"], original_features
+                )
+                # Store the CSV output row for writing later
+                csv_out_rows += rows
             # Print details about this testing step
             if i % log_interval == 0:
                 print(
@@ -110,13 +120,12 @@ def test_process(
     percent_correct = total_correct / test_loader.dataset.total_records() * 100
     test_accuracy = round(percent_correct, 2)
     print("\t{}Test Accuracy: {}%{}".format(color.BOLD, test_accuracy, color.END))
-    # Determine the output predictions CSV filename
-    if final_test == True:
-        outname = "final_test.csv"
-    else:
-        outname = "epochs/epoch_{}.csv".format(epoch)
-    # Check if an output CSV should be produced this epoch
-    if (epoch % SAVE_PREDICTIONS_EVERY == 0) or (final_test == True):
+    if WRITE_OUTPUT_CSV:
+        # Determine the output predictions CSV filename
+        if final_test == True:
+            outname = "final_test.csv"
+        else:
+            outname = "epochs/epoch_{}.csv".format(epoch)
         # Write the predicted path segmentation labels to an output CSV
         write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
     # Return the test losses and accuracy from this epoch

@@ -51,22 +51,19 @@ TIME_FEATURES = [
     SINTIME,
     COSTIME,
 ]
-# Specify the output CSV columns
+# All input feature column names:
+FEATURE_COLUMNS = [
+    STOPOVER,
+    LATITUDE,
+    LONGITUDE,
+] + TIME_FEATURES
+# All CSV output columns:
 OUTPUT_FIELDNAMES = [
     "Correct",
     "Predicted",
     "Actual",
     IDENTIFIER,
-    STOPOVER,
-    LATITUDE,
-    LONGITUDE,
-    YEAR,
-    MONTH,
-    DAY,
-    UNIXTIME,
-    SINTIME,
-    COSTIME,
-]
+] + FEATURE_COLUMNS
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -197,9 +194,6 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Delete the ID and Status columns, since we don't want them as data features
         del trajectory[IDENTIFIER]
         del trajectory[STATUS]
-        # TODO: Normalize
-        # 0 mean and standard deviation
-        # self.normalize(trajectory)
         # Build the sample dictionary, including the animal ID for CSV output
         sample = {"id": identifier, "features": trajectory, "labels": labels}
         # Apply data transformations if any are specified
@@ -214,9 +208,14 @@ class NormalizeFeatures(object):
 
     def __init__(self):
         self.scaler = StandardScaler()
+        # Better to run self.inverseNormalize only when outputting CSV
+        # but always storing the non-normalized features is ok for now
+        self.orig_features = None
 
     def __call__(self, sample):
         features = sample["features"]
+        # Store non-normalized features for writing output CSV
+        self.orig_features = features.values.tolist()
         # Separate latitude and longitude coordinates
         coords = features[[LATITUDE, LONGITUDE]]
         coords = torch.tensor(coords.values)
