@@ -28,15 +28,16 @@ BATCH_SIZE = 1
 LOG_INTERVAL = 1
 # Model parameters
 INPUT_SIZE = N_FEATURES  # number of features / covariates
-HIDDEN_SIZE = 10  # tunable hyperparameter
+HIDDEN_SIZE = 64  # tunable hyperparameter
 OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
 # Optimizer hyperparameters
 INIT_LEARNING_RATE = 0.001  # == LR
 # LR Scheduler hyperparameters
-SCHEDULER_STEP = 90  # every {} epochs...
-SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
-# Initialize the Loss function
-CRITERION = nn.CrossEntropyLoss()
+LR_FACTOR = 0.1  # decrease LR by factor of {}
+LR_PATIENCE = 10  # wait {} epochs before decreasing
+LR_MIN = 1e-6  # minimum learning rate
+# SCHEDULER_STEP = 90  # every {} epochs...
+# SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
 
 # Ensure deterministic behavior:
 # cuDNN uses nondeterministic algorithms which are disabled here
@@ -73,6 +74,13 @@ class Model(nn.Module):
         # return probs
 
 
+def Criterion():
+    """
+    Create the loss function
+    """
+    return nn.CrossEntropyLoss()
+
+
 def Optimizer(model):
     """
     Create optimizer with specified hyperparameters
@@ -80,7 +88,7 @@ def Optimizer(model):
     # return optim.SGD(
     #     model.parameters(),
     #     lr=INIT_LEARNING_RATE,
-    #     momentum=m0.5,
+    #     momentum=0.5,
     # )
     return optim.Adam(
         model.parameters(),
@@ -92,19 +100,25 @@ def Scheduler(optimizer):
     """
     Create learning-rate-scheduler with specified hyperparameters
     """
-    return optim.lr_scheduler.StepLR(
+    # return optim.lr_scheduler.StepLR(
+    #     optimizer,
+    #     step_size=SCHEDULER_STEP,
+    #     gamma=SCHEDULER_GAMMA,
+    # )
+    return optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
-        step_size=SCHEDULER_STEP,
-        gamma=SCHEDULER_GAMMA,
+        mode="min",  # reduce LR when the validation loss stops decreasing
+        factor=LR_FACTOR,  # reduce LR by factor of {} when loss stops decreasing
+        patience=LR_PATIENCE,  # wait for {} epochs before reducing the learning rate
+        min_lr=LR_MIN,  # we don't want the learning rate to go below 1e-6
+        verbose=True,  # print a message when the learning rate is reduced
     )
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    # on/off flag for whether script should run in "load" or "train" mode
-    parser.add_argument("-l", "--load", action="store_true")
-    args = parser.parse_args()
-    LOAD_MODEL = args.load
+def main(LOAD_MODEL=False):
+    """
+    Main function
+    """
     ##########################################
     ## Set start time to keep track of runtime
     ##########################################
@@ -114,6 +128,8 @@ if __name__ == "__main__":
     ###############################################
     # Define the model (and send to GPU device, if CUDA-compatible)
     model = Model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
+    # Define the loss function
+    criterion = Criterion()
     # Define the optimizer parameters
     optimizer = Optimizer(model)
     # Define the learning rate scheduler parameters
@@ -143,7 +159,7 @@ if __name__ == "__main__":
         ## Test the loaded model on the test data
         #########################################
         test_losses = test_process(
-            model, CRITERION, test_loader, script_start, DEVICE, LOG_INTERVAL
+            model, criterion, test_loader, script_start, DEVICE, LOG_INTERVAL
         )
     else:
         ###################################################
@@ -167,19 +183,17 @@ if __name__ == "__main__":
             train_losses, train_accuracy = train_process(
                 optimizer,
                 model,
-                CRITERION,
+                criterion,
                 train_loader,
                 script_start,
                 DEVICE,
                 LOG_INTERVAL,
                 epoch,
             )
-            # Update the optimizer's learning rate
-            scheduler.step()
             # Run the testing process
             test_losses, test_accuracy = test_process(
                 model,
-                CRITERION,
+                criterion,
                 test_loader,
                 script_start,
                 DEVICE,
@@ -189,6 +203,11 @@ if __name__ == "__main__":
             # Find the average train/test losses
             train_loss = mean(train_losses)
             test_loss = mean(test_losses)
+            # Adjust the learning rate
+            # based on the validation loss
+            scheduler.step(test_loss)  # Plateau
+            ### Update the optimizer's learning rate
+            ## scheduler.step() # StepLR
             # Keep track of average loss for each epoch
             avg_train_losses.append(train_loss)
             avg_test_losses.append(test_loss)
@@ -204,8 +223,25 @@ if __name__ == "__main__":
         ##############################################################
         plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
         plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
-
     ##########
     ## The End
     ##########
     finish_script(script_start)
+
+
+if __name__ == "__main__":
+    # Check command-line arguments:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-l",
+        "--load",
+        required=False,
+        action="store_true",
+        help="on/off flag specifying if script \
+        should run in `load` or `train` mode \
+        i.e. `load` a pre-trained model (-l), \
+        or `train` a new one from scratch (default)",
+    )
+    args = parser.parse_args()
+    # Start the script
+    main(args.load)
