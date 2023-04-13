@@ -32,10 +32,6 @@ DAY = "Day"  # +1 feature
 UNIXTIME = "UnixTime"  # +1 feature
 SINTIME = "SinTime"  # +1 feature
 COSTIME = "CosTime"  # +1 feature
-################################
-### Number of input features: 9
-N_FEATURES = 9
-################################
 # TODO:
 #   + species feature
 #   + consider 'presumed' confidence factor
@@ -57,13 +53,8 @@ FEATURE_COLUMNS = [
     LATITUDE,
     LONGITUDE,
 ] + TIME_FEATURES
-# All CSV output columns:
-OUTPUT_FIELDNAMES = [
-    "Correct",
-    "Predicted",
-    "Actual",
-    IDENTIFIER,
-] + FEATURE_COLUMNS
+# Number of input features: 9
+N_FEATURES = len(FEATURE_COLUMNS)
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):

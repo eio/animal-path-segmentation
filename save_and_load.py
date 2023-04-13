@@ -1,7 +1,18 @@
-from torch import save as torch_save, load as torch_load
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from torch import save as torch_save, load as torch_load
+
+# Local scripts
+from AnimalPathsDataset import IDENTIFIER, FEATURE_COLUMNS
+
+# Setup CSV output columns
+OUTPUT_FIELDNAMES = [
+    "Correct",
+    "Predicted",
+    "Actual",
+    IDENTIFIER,
+] + FEATURE_COLUMNS
 
 # Setup output paths
 OUTPUT = "output/"
@@ -39,7 +50,7 @@ def load_model(model, optimizer):
     return model, optimizer, saved_state["epoch"]
 
 
-def write_output_csv(csv_name, predictions, fieldnames):
+def write_output_csv(csv_name, predictions):
     """
     Write model predictions to output CSV
     """
@@ -47,7 +58,7 @@ def write_output_csv(csv_name, predictions, fieldnames):
     print("Write the predictions output to: {}...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(fieldnames)
+        writer.writerow(OUTPUT_FIELDNAMES)
         for i in range(0, len(predictions)):
             writer.writerow(predictions[i])
 

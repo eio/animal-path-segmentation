@@ -2,7 +2,7 @@ from numpy import mean, count_nonzero as count_true
 from torch import no_grad, tensor, long as torch_long
 
 # Local scripts
-from AnimalPathsDataset import N_CATEGORIES, OUTPUT_FIELDNAMES
+from AnimalPathsDataset import N_CATEGORIES
 from save_and_load import write_output_csv
 from utils import (
     color,
@@ -126,6 +126,6 @@ def test_process(
         else:
             outname = "epochs/epoch_{}.csv".format(epoch)
         # Write the predicted path segmentation labels to an output CSV
-        write_output_csv(outname, csv_out_rows, OUTPUT_FIELDNAMES)
+        write_output_csv(outname, csv_out_rows)
     # Return the test losses and accuracy from this epoch
     return test_losses, test_accuracy
