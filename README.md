@@ -41,7 +41,7 @@ All functions that save files can be found in `save_and_load.py`
 All generated output files can be found in `output/`
 
 - During training, a saved `model+optimizer.pth` file is updated on each completed epoch and saved inside of `output/saved_model/`. During testing, when the script is run with `-l`, this is the file that is loaded.
-- The final loss and accuracy plots for all epochs are stored in `output/figures/`.
+- When training is finished, the final loss and accuracy plots for all epochs are stored in `output/figures/`.
 - Predictions for each training epoch are stored in `output/predictions/epochs/`. During testing, when the script is run with `-l`, the final test predictions are stored as `output/predictions/final_results.csv`
 
 # Utilities
