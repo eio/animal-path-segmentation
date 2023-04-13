@@ -8,50 +8,24 @@ import torch.optim as optim
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
+from config import Configurator
 from utils import start_script, finish_script
 from save_and_load import load_model, plot_loss, plot_accuracy
 from train_process import train_process
 from test_process import test_process
-from AnimalPathsDataset import N_FEATURES, N_CATEGORIES
 from AnimalDataLoaders import (
     build_data_loaders,
     build_final_test_data_loader,
 )
 
-# Check for CUDA / GPU Support
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Running with device: {}".format(DEVICE))
-
-# Script log print frequency
-LOG_INTERVAL = 1  # print every {} epochs
-
-# Setup tunable constants
-N_EPOCHS = 100
-BATCH_SIZE = 1
-# Model parameters
-INPUT_SIZE = N_FEATURES  # number of features / covariates
-HIDDEN_SIZE = 64  # tunable hyperparameter
-OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
-# Optimizer hyperparameters
-INIT_LEARNING_RATE = 0.001  # LR
-# LR Scheduler hyperparameters
-LR_FACTOR = 0.1  # decrease LR by factor of {}
-LR_PATIENCE = 10  # wait {} epochs before decreasing
-LR_MIN = 1e-6  # minimum learning rate
-# SCHEDULER_STEP = 90  # every {} epochs...
-# SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
-
-# Ensure deterministic behavior:
-# cuDNN uses nondeterministic algorithms which are disabled here
-torch.backends.cudnn.enabled = False
-# For repeatable experiments we have to set random seeds
-# for anything using random number generation
-random_seed = 1111
-torch.manual_seed(random_seed)
+# Initialize settings and hyperparameters
+cfg = Configurator()
 
 
 class Model(nn.Module):
-    """ Basic RNN Model """
+    """
+    Create the model
+    """
 
     def __init__(self, input_size, hidden_size, output_size):
         super(Model, self).__init__()
@@ -85,7 +59,7 @@ def Criterion():
 
 def Optimizer(model):
     """
-    Create optimizer with specified hyperparameters
+    Create the optimizer
     """
     # return optim.SGD(
     #     model.parameters(),
@@ -94,51 +68,50 @@ def Optimizer(model):
     # )
     return optim.Adam(
         model.parameters(),
-        lr=INIT_LEARNING_RATE,
+        lr=cfg.INIT_LEARNING_RATE,
     )
 
 
 def Scheduler(optimizer):
     """
-    Create learning-rate-scheduler with specified hyperparameters
+    Create the learning-rate scheduler
     """
     # return optim.lr_scheduler.StepLR(
     #     optimizer,
-    #     step_size=SCHEDULER_STEP,
-    #     gamma=SCHEDULER_GAMMA,
+    #     step_size=cfg.SCHEDULER_STEP,
+    #     gamma=cfg.SCHEDULER_GAMMA,
     # )
     return optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="min",  # reduce LR when the validation loss stops decreasing
-        factor=LR_FACTOR,  # reduce LR by factor of {} when loss stops decreasing
-        patience=LR_PATIENCE,  # wait for {} epochs before reducing the learning rate
-        min_lr=LR_MIN,  # we don't want the learning rate to go below 1e-6
+        factor=cfg.LR_FACTOR,  # reduce LR by factor of {} when loss stops decreasing
+        patience=cfg.LR_PATIENCE,  # wait for {} epochs before reducing the LR
+        min_lr=cfg.LR_MIN,  # don't let the learning rate go below {}
         verbose=True,  # print a message when the learning rate is reduced
     )
 
 
-def main(LOAD_MODEL=False):
+def main(LOAD_SAVED_MODEL=False):
     """
     Main function
     """
-    ##########################################
-    ## Set start time to keep track of runtime
-    ##########################################
+    # Set start time to keep track of runtime
     script_start = start_script()
     ###############################################
     ## Initialize the model and learning conditions
     ###############################################
-    # Define the model (and send to GPU device, if CUDA-compatible)
-    model = Model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
-    # Define the loss function
+    # Define the model
+    # and send to GPU device (if CUDA-compatible)
+    model = Model(
+        cfg.INPUT_SIZE,
+        cfg.HIDDEN_SIZE,
+        cfg.OUTPUT_SIZE,
+    ).to(cfg.DEVICE)
+    # Define the loss function, optimizer, and scheduler
     criterion = Criterion()
-    # Define the optimizer parameters
     optimizer = Optimizer(model)
-    # Define the learning rate scheduler parameters
     scheduler = Scheduler(optimizer)
-    #########################################
-    ## Initialize losses for loss plot output
-    #########################################
+    # Initialize losses/accuracies for plot output
     train_losses = []
     test_losses = []
     train_accuracies = []
@@ -148,38 +121,40 @@ def main(LOAD_MODEL=False):
     ## Perform the Training and Testing
     ###################################
     ###################################
-    if LOAD_MODEL == True:
-        ###############################################
-        # Load the previously saved model and optimizer
-        ###############################################
+    if LOAD_SAVED_MODEL == True:
+        #########################################################
+        ## Load and test the previously saved model and optimizer
+        #########################################################
         model, optimizer, epoch = load_model(model, optimizer)
-        ##################################################
-        ## Load the custom AnimalPathsDataset testing data
-        ##################################################
+        # Load the custom AnimalPathsDataset `Testing` data
         test_loader = build_final_test_data_loader()
-        #########################################
-        ## Test the loaded model on the test data
-        #########################################
-        test_losses = test_process(
-            model, criterion, test_loader, script_start, DEVICE, LOG_INTERVAL
+        # Test the loaded model on the test data
+        test_process(
+            model,
+            criterion,
+            test_loader,
+            script_start,
+            cfg.DEVICE,
+            cfg.LOG_INTERVAL,
         )
     else:
-        ###################################################
-        ## Load the custom AnimalPathsDataset training data
-        ###################################################
+        ###############################
+        ## Train the model from scratch
+        ###############################
+        # Load the custom AnimalPathsDataset `Training` data
         loaders = build_data_loaders()
         train_loader = loaders["train"]
         test_loader = loaders["test"]
-        #####################################
-        ## Train the model from the beginning
-        #####################################
-        completed_epochs = []
+        # Keep track of completed epoch indices for loss plot
+        completed_epochs = []  # list of incremental integers
         # Store running averages of train/test losses for each epoch
         avg_train_losses = []
         avg_test_losses = []
         # Make epochs 1-indexed for better prints
-        epoch_range = range(1, N_EPOCHS + 1)
+        epoch_range = range(1, cfg.N_EPOCHS + 1)
+        ###############################
         # Train and test for each epoch
+        ###############################
         for epoch in epoch_range:
             # Run the training process
             train_losses, train_accuracy = train_process(
@@ -188,8 +163,8 @@ def main(LOAD_MODEL=False):
                 criterion,
                 train_loader,
                 script_start,
-                DEVICE,
-                LOG_INTERVAL,
+                cfg.DEVICE,
+                cfg.LOG_INTERVAL,
                 epoch,
             )
             # Run the testing process
@@ -198,8 +173,8 @@ def main(LOAD_MODEL=False):
                 criterion,
                 test_loader,
                 script_start,
-                DEVICE,
-                LOG_INTERVAL,
+                cfg.DEVICE,
+                cfg.LOG_INTERVAL,
                 epoch,
             )
             # Find the average train/test losses
@@ -208,8 +183,8 @@ def main(LOAD_MODEL=False):
             # Adjust the learning rate
             # based on the validation loss
             scheduler.step(test_loss)  # Plateau
-            ### Update the optimizer's learning rate
-            ## scheduler.step() # StepLR
+            ## Update the optimizer's learning rate (StepLR)
+            ## scheduler.step()
             # Keep track of average loss for each epoch
             avg_train_losses.append(train_loss)
             avg_test_losses.append(test_loss)
@@ -228,6 +203,7 @@ def main(LOAD_MODEL=False):
     ##########
     ## The End
     ##########
+    # Print total script runtime
     finish_script(script_start)
 
 

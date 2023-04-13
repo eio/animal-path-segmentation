@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Setup output paths
-SAVED_MODEL_PATH = "results/model+optimizer.pth"
-ACCURACY_PLOT_PATH = "figures/accuracy.png"
-LOSS_PLOT_PATH = "figures/loss.png"
-PREDICTIONS_DIR = "predictions/"
+OUTPUT = "output/"
+SAVED_MODEL_PATH = OUTPUT + "saved_model/model+optimizer.pth"
+ACCURACY_PLOT_PATH = OUTPUT + "figures/accuracy.png"
+LOSS_PLOT_PATH = OUTPUT + "figures/loss.png"
+PREDICTIONS_DIR = OUTPUT + "predictions/"
 
 
 def save_model(epoch, model, optimizer):

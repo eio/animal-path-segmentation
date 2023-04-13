@@ -75,9 +75,8 @@ def test_process(
             output, loss = test(model, criterion, labels_tensor, inputs_tensor)
             # Store the loss value for this batch
             test_losses.append(loss)
-            # Put data back on the CPU
+            # Put output data back on the CPU
             output = output.cpu()
-            features = inputs_tensor.cpu()
             # Get the predicted category string from the model output
             guesses = categories_from_output(output)
             # Convert the label tensor to the category string
@@ -123,7 +122,7 @@ def test_process(
     if WRITE_OUTPUT_CSV:
         # Determine the output predictions CSV filename
         if final_test == True:
-            outname = "final_test.csv"
+            outname = "final_results.csv"
         else:
             outname = "epochs/epoch_{}.csv".format(epoch)
         # Write the predicted path segmentation labels to an output CSV
