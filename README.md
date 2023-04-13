@@ -31,7 +31,7 @@ The loaded model will then be tested against the final test dataset as specified
 
 The custom PyTorch dataset logic is stored in `AnimalPathsDataset.py`
 
-This is loaded by PyTorch DataLoaders in `AnimalDataLoaders.py`
+This is loaded by PyTorch DataLoaders in `AnimalDataLoaders.py`, which is also where the input CSV filepaths are defined.
 
 
 # File Outputs
