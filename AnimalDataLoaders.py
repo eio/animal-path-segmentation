@@ -12,9 +12,8 @@ SHUFFLE = False
 # Default batch size
 BATCH_SIZE = 1
 # Setup paths for accessing data
-TRAIN_CSV = "data/Cranes_processed.csv"
-# TODO: these should be different, of course
-VALIDATION_CSV = "data/Cranes_processed.csv"
+TRAIN_CSV = "data/train.csv"
+VALIDATION_CSV = "data/validation.csv"
 FINAL_TEST_CSV = "data/Cranes_processed.csv"
 
 

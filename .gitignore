@@ -7,8 +7,9 @@ output/predictions/*.csv
 output/predictions/epochs/*.csv
 output/figures/*.png
 
-data/Cranes*
-data/preprocessing/*.txt
-data/preprocessing/*.csv
-data/preprocessing/output/*.csv
-data/preprocessing/segmentations/
+data/*.csv
+data/preprocessing/split_data/*.csv
+data/preprocessing/add_labels/*.csv
+data/preprocessing/add_labels/*.txt
+data/preprocessing/add_labels/output/*.csv
+data/preprocessing/add_labels/segmentations/
