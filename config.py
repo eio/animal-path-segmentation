@@ -13,7 +13,8 @@ class Configurator(object):
         #################
         ## Print settings
         #################
-        self.LOG_INTERVAL = 1  # print every {} epochs
+        # Print every {} epochs
+        self.LOG_INTERVAL = 1
         ####################
         ## Training settings
         ####################
@@ -22,9 +23,24 @@ class Configurator(object):
         #################
         ## Model settings
         #################
-        self.INPUT_SIZE = N_FEATURES  # number of features / covariates
-        self.HIDDEN_SIZE = 32  # tunable hyperparameter
-        self.OUTPUT_SIZE = N_CATEGORIES  # "Winter", "Spring", "Summer", "Autumn"
+        # `input_size` is the number of features/ covariates
+        self.INPUT_SIZE = N_FEATURES
+        # `hidden_size` controls the width of each RNN layer
+        # (i.e., the number of neurons in each layer)
+        self.HIDDEN_SIZE = 32
+        # `output_size` is the number of possible categories:
+        # len(["Winter", "Spring", "Summer", "Autumn"])
+        self.OUTPUT_SIZE = N_CATEGORIES
+        # `num_layers` controls the depth of the RNN
+        # (i.e., the number of stacked RNN layers)
+        self.NUM_LAYERS = 2  # default = 1
+        # The recommended values for dropout probability are
+        # between 0.1 and 0.5, depending on the task and model size.
+        self.DROPOUT = 0.2  # default = 0
+        # Guideline: if the model has less than
+        # tens-of-thousands of trainable parameters,
+        # regularization may not be needed. For an RNN:
+        # trainable_params = ((input_size + hidden_size) * hidden_size + hidden_size) * num_layers
         #####################
         ## Optimizer settings
         #####################

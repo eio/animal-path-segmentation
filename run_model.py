@@ -27,12 +27,18 @@ class Model(nn.Module):
     Create the model
     """
 
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size, output_size, num_layers, dropout):
         super(Model, self).__init__()
         self.hidden_size = hidden_size
-        self.model = nn.RNN(input_size, hidden_size, batch_first=True)
-        ### TODO: compare RNN and LSTM
-        # self.model = nn.LSTM(input_size, hidden_size, batch_first=True)
+        # TODO: compare RNN and LSTM
+        # self.model = nn.LSTM(...)
+        self.model = nn.RNN(
+            input_size,
+            hidden_size,
+            num_layers=num_layers,
+            dropout=dropout,
+            batch_first=True,
+        )
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x, lengths):
@@ -45,15 +51,14 @@ class Model(nn.Module):
         # Pass the outputs through a linear layer to get the final predictions
         logits = self.fc(outputs)
         return logits
-        # # Apply softmax activation function to convert logits to probabilities
-        # probs = nn.functional.softmax(logits, dim=-1)
-        # return probs
 
 
 def Criterion():
     """
     Create the loss function
     """
+    # The log softmax function and the negative log likelihood loss
+    # are combined in nn.CrossEntropyLoss()
     return nn.CrossEntropyLoss()
 
 
@@ -61,11 +66,7 @@ def Optimizer(model):
     """
     Create the optimizer
     """
-    # return optim.SGD(
-    #     model.parameters(),
-    #     lr=INIT_LEARNING_RATE,
-    #     momentum=0.5,
-    # )
+    # return optim.SGD(model.parameters(), lr=INIT_LEARNING_RATE, momentum=0.5,)
     return optim.Adam(
         model.parameters(),
         lr=cfg.INIT_LEARNING_RATE,
@@ -106,6 +107,8 @@ def main(LOAD_SAVED_MODEL=False):
         cfg.INPUT_SIZE,
         cfg.HIDDEN_SIZE,
         cfg.OUTPUT_SIZE,
+        cfg.NUM_LAYERS,
+        cfg.DROPOUT,
     ).to(cfg.DEVICE)
     # Define the loss function, optimizer, and scheduler
     criterion = Criterion()
