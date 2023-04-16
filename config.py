@@ -2,6 +2,7 @@ import torch
 
 # Local scripts
 from AnimalPathsDataset import N_FEATURES, N_CATEGORIES
+from save_and_load import write_config_json
 
 
 class Configurator(object):
@@ -35,7 +36,7 @@ class Configurator(object):
         # (i.e., the number of stacked RNN layers)
         self.NUM_LAYERS = 2  # default = 1
         # The recommended values for dropout probability are
-        # between 0.1 and 0.5, depending on the task and model size.
+        # between 0.1 and 0.5, depending on the task and model size
         self.DROPOUT = 0.2  # default = 0
         # Guideline: if the model has less than
         # tens-of-thousands of trainable parameters,
@@ -55,11 +56,23 @@ class Configurator(object):
         # Hyperparameters for `lr_scheduler.StepLR`
         # SCHEDULER_STEP = 90  # every {} epochs...
         # SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
-        ###################
-        ## PyTorch settings
-        ###################
+        #####################
+        ## Save configuration
+        #####################
+        # Save the current configuration to file
+        # alongside the final model results
+        self.save()
+        ################
+        ## PyTorch setup
+        ################
         self.DEVICE = self.get_device()
         self.repeatable()
+
+    def save(self):
+        """
+        Save current configuration to an output file
+        """
+        write_config_json(self)
 
     def repeatable(self):
         """

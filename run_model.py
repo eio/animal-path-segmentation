@@ -10,12 +10,17 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 # Local scripts
 from config import Configurator
 from utils import start_script, finish_script
-from save_and_load import load_model, plot_loss, plot_accuracy
 from train_process import train_process
 from test_process import test_process
 from AnimalDataLoaders import (
     build_data_loaders,
     build_final_test_data_loader,
+)
+from save_and_load import (
+    load_model,
+    plot_loss,
+    plot_accuracy,
+    print_best,
 )
 
 # Initialize settings and hyperparameters
@@ -30,8 +35,6 @@ class Model(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, num_layers, dropout):
         super(Model, self).__init__()
         self.hidden_size = hidden_size
-        # TODO: compare RNN and LSTM
-        # self.model = nn.LSTM(...)
         self.model = nn.RNN(
             input_size,
             hidden_size,
@@ -39,6 +42,8 @@ class Model(nn.Module):
             dropout=dropout,
             batch_first=True,
         )
+        ### TODO: compare RNN and LSTM
+        # self.model = nn.LSTM(input_size, hidden_size, num_layers=num_layers, dropout=dropout, batch_first=True,)
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x, lengths):
@@ -203,6 +208,8 @@ def main(LOAD_SAVED_MODEL=False):
         ##############################################################
         plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
         plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
+        # Print the best epoch along with its loss and accuracy
+        print_best(completed_epochs, avg_test_losses, test_accuracies)
     ##########
     ## The End
     ##########
