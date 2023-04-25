@@ -5,8 +5,8 @@ __archive/
 output/saved_model/*.pth
 output/predictions/*.csv
 output/predictions/epochs/*.csv
-output/figures/*.png
-output/figures/*.txt
+output/performance/*.png
+output/performance/*.txt
 
 data/*.csv
 data/preprocessing/split_data/*.csv
