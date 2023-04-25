@@ -134,6 +134,8 @@ def main(LOAD_SAVED_MODEL=False):
         ## Load and test the previously saved model and optimizer
         #########################################################
         model, optimizer, epoch = load_model(model, optimizer)
+        # Set the model to evaluation mode
+        model.eval()
         # Load the custom AnimalPathsDataset `Testing` data
         test_loader = build_final_test_data_loader()
         # Test the loaded model on the test data
@@ -149,6 +151,8 @@ def main(LOAD_SAVED_MODEL=False):
         ###############################
         ## Train the model from scratch
         ###############################
+        # Set the model to training mode
+        model.train()
         # Load the custom AnimalPathsDataset `Training` data
         loaders = build_data_loaders()
         train_loader = loaders["train"]
