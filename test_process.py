@@ -1,9 +1,16 @@
-from numpy import mean, count_nonzero as count_true
-from torch import no_grad, tensor, long as torch_long
+from torch import no_grad, tensor
+from numpy import (
+    mean,
+    count_nonzero as count_true,
+    concatenate as npcat,
+)
 
 # Local scripts
 from AnimalPathsDataset import N_CATEGORIES
-from save_and_load import write_output_csv
+from save_and_load import (
+    write_output_csv,
+    write_performance_eval,
+)
 from utils import (
     color,
     time_since,
@@ -63,6 +70,10 @@ def test_process(
     csv_out_rows = []
     # Initialize correct prediction count
     total_correct = 0
+    # Initialize lists of predictions and ground truth
+    # to generate evaluation metrics like the confusion matrix
+    all_guesses = []
+    all_labels = []
     # Since we're not training,
     # we don't need to calculate the gradients for our outputs
     with no_grad():
@@ -99,6 +110,11 @@ def test_process(
                 )
                 # Store the CSV output row for writing later
                 csv_out_rows += rows
+            # If it's the final model evaluation, then
+            # keep track of guesses and labels for performance metrics
+            if final_test:
+                all_guesses.append(guesses)
+                all_labels.append(labels)
             # Print details about this testing step
             if i % log_interval == 0:
                 print(
@@ -127,5 +143,8 @@ def test_process(
             outname = "epochs/epoch_{}.csv".format(epoch)
         # Write the predicted path segmentation labels to an output CSV
         write_output_csv(outname, csv_out_rows)
+    if final_test:
+        # Generate confusion matrix and other performance metrics
+        write_performance_eval(npcat(all_labels), npcat(all_guesses))
     # Return the test losses and accuracy from this epoch
     return test_losses, test_accuracy

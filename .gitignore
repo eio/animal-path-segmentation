@@ -6,6 +6,7 @@ output/saved_model/*.pth
 output/predictions/*.csv
 output/predictions/epochs/*.csv
 output/figures/*.png
+output/figures/*.txt
 
 data/*.csv
 data/preprocessing/split_data/*.csv

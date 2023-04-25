@@ -4,10 +4,20 @@ from numpy import argmin
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from torch import save as torch_save, load as torch_load
+from sklearn.metrics import (
+    classification_report,
+    accuracy_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+)
 
 # Local scripts
-from AnimalPathsDataset import IDENTIFIER, FEATURE_COLUMNS
 from utils import color
+from AnimalPathsDataset import (
+    IDENTIFIER,
+    FEATURE_COLUMNS,
+    SEASON_LABELS,
+)
 
 # Setup CSV output columns
 OUTPUT_FIELDNAMES = [
@@ -20,10 +30,13 @@ OUTPUT_FIELDNAMES = [
 # Setup output paths
 OUTPUT = "output/"
 SAVED_MODEL_PATH = OUTPUT + "saved_model/model+optimizer.pth"
+EVALUATION_PATH = OUTPUT + "figures/model_evaluation.txt"
+CONFUSION_MATRIX_PATH = OUTPUT + "figures/confusion_matrix.png"
 ACCURACY_PLOT_PATH = OUTPUT + "figures/accuracy.png"
 LOSS_PLOT_PATH = OUTPUT + "figures/loss.png"
 CONFIG_PATH = OUTPUT + "config.json"
 PREDICTIONS_DIR = OUTPUT + "predictions/"
+LINE = "\n------------------------------------------------------\n\n"
 
 
 def save_model(epoch, model, optimizer):
@@ -86,6 +99,43 @@ def write_output_csv(csv_name, predictions):
         writer.writerow(OUTPUT_FIELDNAMES)
         for i in range(0, len(predictions)):
             writer.writerow(predictions[i])
+
+
+def write_performance_eval(labels, guesses):
+    """
+    Evaluate model performance using:
+    - the accuracy score
+    - the confusion matrix
+    - the classification report (precision, recall, f1-score, support)
+    """
+    confmat = confusion_matrix(labels, guesses)
+    # Generate a text file with the confusion matrix and other metrics
+    with open(EVALUATION_PATH, "w") as f:
+        f.write("[ Model Evaluation ]\n{}".format(LINE))
+        f.write("Accuracy Score:\t\t{}\n".format(accuracy_score(labels, guesses)))
+        f.write("{}Confusion Matrix:\n\n{}\n".format(LINE, confmat))
+        f.write(
+            "{}Classification Report:\n\n{}".format(
+                LINE,
+                # `zero_division=1` sets precision and F-score to 1
+                # for classes with no predicted samples
+                classification_report(labels, guesses, zero_division=1),
+            )
+        )
+        # Note: F1 scores range from 0 to 1, with higher scores being generally better
+        print("Model evaluation report saved to `{}`".format(EVALUATION_PATH))
+    # Generate the confusion matrix plot display
+    cmd = ConfusionMatrixDisplay(
+        confusion_matrix=confmat, display_labels=SEASON_LABELS.keys()
+    )
+    # Plot the confusion matrix
+    fig, ax = plt.subplots(figsize=(9, 9))
+    cmd.plot(ax=ax)
+    # Customize the axis labels
+    ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)
+    ax.set_ylabel("Ground Truth Label", fontsize=12, fontweight="bold", labelpad=10)
+    # Save the confusion matrix image
+    plt.savefig(CONFUSION_MATRIX_PATH)
 
 
 def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
