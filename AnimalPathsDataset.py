@@ -1,5 +1,3 @@
-# Code adapted from:
-# https://pytorch.org/tutorials/recipes/recipes/custom_dataset_transforms_loader.html
 import math
 import torch
 import numpy as np
@@ -21,39 +19,40 @@ IDENTIFIER = "individual_id"
 # Coordinates
 LATITUDE = "lat"  # +1 feature
 LONGITUDE = "lon"  # +1 feature
-# Stopover flag (binary)
-STOPOVER = "stopover"  # +1 feature
 # Original time column
 TIMESTAMP = "timestamp"
+# Derived movement features
+VELOCITY = "Velocity"
+BEARING = "Bearing"
+TURN_ANGLE = "TurnAngle"
 # Derived time features
-YEAR = "Year"  # +1 feature
 MONTH = "Month"  # +1 feature
 DAY = "Day"  # +1 feature
-UNIXTIME = "UnixTime"  # +1 feature
 SINTIME = "SinTime"  # +1 feature
 COSTIME = "CosTime"  # +1 feature
-# TODO:
-#   + species feature
-#   + consider 'presumed' confidence factor
+# UNIXTIME = "UnixTime"
+# YEAR = "Year"  #
 # SPECIES = "species"
 # CONFIDENCE = "confidence"
+# # Stopover flag (binary)
+# STOPOVER = "stopover"
 STATUS = "status"  # the seasonal segmentation label
 # Group time features for normalization
 TIME_FEATURES = [
-    YEAR,
+    # YEAR,
     MONTH,
     DAY,
-    UNIXTIME,
+    # UNIXTIME,
     SINTIME,
     COSTIME,
 ]
 # All input feature column names:
 FEATURE_COLUMNS = [
-    STOPOVER,
+    # STOPOVER,
     LATITUDE,
     LONGITUDE,
 ] + TIME_FEATURES
-# Number of input features: 9
+# Number of input features: 6
 N_FEATURES = len(FEATURE_COLUMNS)
 
 
@@ -106,7 +105,7 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = df[
             [
                 IDENTIFIER,
-                STOPOVER,
+                # STOPOVER,
                 LATITUDE,
                 LONGITUDE,
                 TIMESTAMP,
@@ -124,6 +123,8 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
         # Expand the time features to numerical values
         df = self.transform_time_features(df)
+        # TODO: Calculate velocity, bearing, turn angle
+        # df = self.get_vbt(df)
         # # Print some stats about the data
         # print("Label stats:\n{}".format(df[STATUS].value_counts()))
         # print("Individual stats:\n{}".format(df[IDENTIFIER].value_counts()))
@@ -150,16 +151,16 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
 
     def transform_time_features(self, df):
         """
-        Return vector of numerical time features:
+        Add new time features to the dataframe:
         - integers for Year, Month, and Day values
         - float for Unix time
         - floats for sin/cos time (cyclical)
         """
         df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
-        df[YEAR] = df[TIMESTAMP].dt.year
+        # df[YEAR] = df[TIMESTAMP].dt.year
         df[MONTH] = df[TIMESTAMP].dt.month
         df[DAY] = df[TIMESTAMP].dt.day
-        df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
+        # df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
         # Represent the time as a cyclic feature for seasons
         df[[SINTIME, COSTIME]] = df[TIMESTAMP].apply(
             lambda x: pd.Series(self.cyclic_time(x))
