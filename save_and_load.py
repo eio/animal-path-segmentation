@@ -166,7 +166,7 @@ def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
     ax = fig.gca()
     plt.scatter(completed_epochs, train_accuracies, color="blue")
     plt.scatter(completed_epochs, test_accuracies, color="red")
-    plt.legend(["Train Accuracy", "Test Accuracy"], loc="upper right")
+    plt.legend(["Train Accuracy", "Test Accuracy"], loc="lower right")
     plt.xlabel("Number of Epochs")
     plt.ylabel("Accuracy (%)")
     # Force integer X-axis tick marks,
