@@ -9,7 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
 from config import Configurator
-from utils import start_script, finish_script
+from utils.general import start_script, finish_script
 from train_process import train_process
 from test_process import test_process
 from AnimalDataLoaders import (

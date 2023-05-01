@@ -5,6 +5,18 @@ import pandas as pd
 from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 
+# Local scripts
+from utils.movement import (
+    calculate_velocity,
+    calculate_bearing,
+    calculate_turn_angle,
+    calculate_spatial_differences,
+    calculate_velocity_bearing_turn,
+)
+
+# Assign each event to a burst (assuming a burst ends if
+# the time difference is greater than some threshold, e.g. 300 seconds)
+BURST_TIME_THRESHOLD = 300
 # Number of possible labels
 N_CATEGORIES = 4
 # One-hot encoding for seasonal labels
@@ -22,14 +34,14 @@ LONGITUDE = "lon"  # +1 feature
 # Original time column
 TIMESTAMP = "timestamp"
 # Derived movement features
-VELOCITY = "Velocity"
-BEARING = "Bearing"
-TURN_ANGLE = "TurnAngle"
+VELOCITY = "velocity"
+BEARING = "bearing"
+TURN_ANGLE = "turn_angle"
 # Derived time features
-MONTH = "Month"  # +1 feature
-DAY = "Day"  # +1 feature
-SINTIME = "SinTime"  # +1 feature
-COSTIME = "CosTime"  # +1 feature
+MONTH = "month"  # +1 feature
+DAY = "dat"  # +1 feature
+SINTIME = "sin_time"  # +1 feature
+COSTIME = "cos_time"  # +1 feature
 # UNIXTIME = "UnixTime"
 # YEAR = "Year"  #
 # SPECIES = "species"
@@ -51,6 +63,9 @@ FEATURE_COLUMNS = [
     # STOPOVER,
     LATITUDE,
     LONGITUDE,
+    VELOCITY,
+    BEARING,
+    TURN_ANGLE,
 ] + TIME_FEATURES
 # Number of input features: 6
 N_FEATURES = len(FEATURE_COLUMNS)
@@ -123,8 +138,14 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
         # Expand the time features to numerical values
         df = self.transform_time_features(df)
-        # TODO: Calculate velocity, bearing, turn angle
-        # df = self.get_vbt(df)
+        # Calculate velocity, bearing, and turn angle
+        # after first grouping by individual trajectories
+        trajectories = df.groupby([IDENTIFIER])
+        df = trajectories.apply(calculate_velocity_bearing_turn).reset_index(
+            drop=True  # reset index to obtain a new DataFrame with same shape as original one
+        )
+        # Delete datetime column now that we're done using it
+        del df[TIMESTAMP]
         # # Print some stats about the data
         # print("Label stats:\n{}".format(df[STATUS].value_counts()))
         # print("Individual stats:\n{}".format(df[IDENTIFIER].value_counts()))
@@ -165,8 +186,6 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df[[SINTIME, COSTIME]] = df[TIMESTAMP].apply(
             lambda x: pd.Series(self.cyclic_time(x))
         )
-        # Delete the original "timestamp" column
-        del df[TIMESTAMP]
         # Return the transformed dataframe
         return df
 

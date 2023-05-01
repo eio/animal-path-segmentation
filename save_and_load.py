@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 
 # Local scripts
-from utils import color
+from utils.general import color
 from AnimalPathsDataset import (
     IDENTIFIER,
     FEATURE_COLUMNS,
