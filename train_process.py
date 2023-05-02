@@ -3,7 +3,12 @@ from torch import tensor, long as torch_long
 
 # Local scripts
 from save_and_load import save_model
-from utils import color, time_since, categories_from_label, categories_from_output
+from utils.general import (
+    color,
+    time_since,
+    categories_from_label,
+    categories_from_output,
+)
 from AnimalPathsDataset import N_CATEGORIES
 
 

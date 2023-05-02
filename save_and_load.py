@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 
 # Local scripts
-from utils import color
+from utils.general import color
 from AnimalPathsDataset import (
     IDENTIFIER,
     FEATURE_COLUMNS,
@@ -77,6 +77,7 @@ def write_config_json(cfg):
     with open(CONFIG_PATH, "w", newline="") as jsonfile:
         output = {
             "N_EPOCHS": cfg.N_EPOCHS,
+            "BATCH_SIZE": cfg.BATCH_SIZE,
             "HIDDEN_SIZE": cfg.HIDDEN_SIZE,
             "NUM_LAYERS": cfg.NUM_LAYERS,
             "DROPOUT": cfg.DROPOUT,
@@ -84,6 +85,7 @@ def write_config_json(cfg):
             "LR_PATIENCE": cfg.LR_PATIENCE,
             "LR_FACTOR": cfg.LR_FACTOR,
             "LR_MIN": cfg.LR_MIN,
+            "BURST_TIME_THRESHOLD": cfg.BURST_TIME_THRESHOLD,
         }
         json.dump(output, jsonfile, indent=4)
 

@@ -11,7 +11,7 @@ from save_and_load import (
     write_output_csv,
     write_performance_eval,
 )
-from utils import (
+from utils.general import (
     color,
     time_since,
     categories_from_label,

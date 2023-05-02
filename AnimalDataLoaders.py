@@ -7,21 +7,19 @@ import AnimalPathsDataset as APD
 # Shuffling time-series data is generally not appropriate,
 # and preserving the order of the records is important
 # for training an RNN on this type of data.
-# TODO: since time is added as a feature, maybe shuffling can be True?
 SHUFFLE = False
-# Default batch size
-BATCH_SIZE = 1
 # Setup paths for accessing data
 TRAIN_CSV = "data/train.csv"
 VALIDATION_CSV = "data/validation.csv"
 FINAL_TEST_CSV = "data/Cranes_processed.csv"
 
 
-def build_data_loaders(batch_size=BATCH_SIZE):
+def build_data_loaders(batch_size, burst_time_threshold):
     print("Building datasets...")
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
+        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
                 APD.NormalizeFeatures(),
@@ -29,9 +27,11 @@ def build_data_loaders(batch_size=BATCH_SIZE):
             ]
         ),
     )
+    print("\tTraining dataset built.")
     # Create the Test dataset
     validation_dataset = APD.AnimalPathsDataset(
         csv_file=VALIDATION_CSV,
+        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
                 APD.NormalizeFeatures(),
@@ -39,31 +39,34 @@ def build_data_loaders(batch_size=BATCH_SIZE):
             ]
         ),
     )
+    print("\tValidation dataset built.")
     print("Building data loaders...")
     # Build the Train loader
-    # https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=SHUFFLE,
     )
+    print("\tTraining loader built.")
     # Build the Test loader
     validation_loader = torch.utils.data.DataLoader(
         validation_dataset,
         batch_size=batch_size,
         shuffle=SHUFFLE,
     )
+    print("\tValidation loader built.")
     return {
         "train": train_loader,
         "test": validation_loader,
     }
 
 
-def build_final_test_data_loader(batch_size=BATCH_SIZE):
+def build_final_test_data_loader(batch_size, burst_time_threshold):
     """ Final, unlabeled, test dataset """
     print("Building dataset...")
     dataset = APD.AnimalPathsDataset(
         csv_file=FINAL_TEST_CSV,
+        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
                 APD.NormalizeFeatures(),
