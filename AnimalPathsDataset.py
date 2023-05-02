@@ -6,17 +6,8 @@ from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 
 # Local scripts
-from utils.movement import (
-    calculate_velocity,
-    calculate_bearing,
-    calculate_turn_angle,
-    calculate_spatial_differences,
-    calculate_velocity_bearing_turn,
-)
+from utils.movement import calculate_velocity_bearing_turn
 
-# Assign each event to a burst (assuming a burst ends if
-# the time difference is greater than some threshold, e.g. 300 seconds)
-BURST_TIME_THRESHOLD = 300
 # Number of possible labels
 N_CATEGORIES = 4
 # One-hot encoding for seasonal labels
@@ -39,7 +30,7 @@ BEARING = "bearing"
 TURN_ANGLE = "turn_angle"
 # Derived time features
 MONTH = "month"  # +1 feature
-DAY = "dat"  # +1 feature
+DAY = "day"  # +1 feature
 SINTIME = "sin_time"  # +1 feature
 COSTIME = "cos_time"  # +1 feature
 # UNIXTIME = "UnixTime"
@@ -58,15 +49,21 @@ TIME_FEATURES = [
     SINTIME,
     COSTIME,
 ]
-# All input feature column names:
-FEATURE_COLUMNS = [
-    # STOPOVER,
-    LATITUDE,
-    LONGITUDE,
+# Group derived movement features
+MOVEMENT_FEATURES = [
     VELOCITY,
     BEARING,
     TURN_ANGLE,
-] + TIME_FEATURES
+]
+# All input feature column names:
+FEATURE_COLUMNS = (
+    [
+        LATITUDE,
+        LONGITUDE,
+    ]
+    + TIME_FEATURES
+    + MOVEMENT_FEATURES
+)
 # Number of input features: 6
 N_FEATURES = len(FEATURE_COLUMNS)
 
@@ -74,7 +71,7 @@ N_FEATURES = len(FEATURE_COLUMNS)
 class AnimalPathsDataset(torch.utils.data.Dataset):
     """Animal paths dataset."""
 
-    def __init__(self, csv_file, transform=None):
+    def __init__(self, csv_file, burst_time_threshold, transform=None):
         """
         Args:
             csv_file (string):
@@ -84,6 +81,8 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         """
         # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
         self.SECONDS_IN_YEAR = 31_536_000
+        # Set the time threshold for an animal movement "burst"
+        self.BURST_TIME_THRESHOLD = burst_time_threshold
         # Load, trim, clean, and transform the data
         self.paths_df = self.load_and_transform_data(csv_file)
         # Group the data into individual animal trajectories
@@ -138,10 +137,14 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
         # Expand the time features to numerical values
         df = self.transform_time_features(df)
-        # Calculate velocity, bearing, and turn angle
-        # after first grouping by individual trajectories
+        # Group by individual trajectories
         trajectories = df.groupby([IDENTIFIER])
-        df = trajectories.apply(calculate_velocity_bearing_turn).reset_index(
+        # Calculate velocity, bearing, and turn angle
+        # across all waypoints for each trajectory
+        df = trajectories.apply(
+            calculate_velocity_bearing_turn,
+            burst_time_threshold=self.BURST_TIME_THRESHOLD,
+        ).reset_index(
             drop=True  # reset index to obtain a new DataFrame with same shape as original one
         )
         # Delete datetime column now that we're done using it
@@ -178,9 +181,9 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         - floats for sin/cos time (cyclical)
         """
         df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
-        # df[YEAR] = df[TIMESTAMP].dt.year
-        df[MONTH] = df[TIMESTAMP].dt.month
         df[DAY] = df[TIMESTAMP].dt.day
+        df[MONTH] = df[TIMESTAMP].dt.month
+        # df[YEAR] = df[TIMESTAMP].dt.year
         # df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
         # Represent the time as a cyclic feature for seasons
         df[[SINTIME, COSTIME]] = df[TIMESTAMP].apply(

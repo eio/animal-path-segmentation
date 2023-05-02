@@ -137,7 +137,10 @@ def main(LOAD_SAVED_MODEL=False):
         # Set the model to evaluation mode
         model.eval()
         # Load the custom AnimalPathsDataset `Testing` data
-        test_loader = build_final_test_data_loader()
+        test_loader = build_final_test_data_loader(
+            cfg.BATCH_SIZE,
+            cfg.BURST_TIME_THRESHOLD,
+        )
         # Test the loaded model on the test data
         test_process(
             model,
@@ -154,7 +157,10 @@ def main(LOAD_SAVED_MODEL=False):
         # Set the model to training mode
         model.train()
         # Load the custom AnimalPathsDataset `Training` data
-        loaders = build_data_loaders()
+        loaders = build_data_loaders(
+            cfg.BATCH_SIZE,
+            cfg.BURST_TIME_THRESHOLD,
+        )
         train_loader = loaders["train"]
         test_loader = loaders["test"]
         # Keep track of completed epoch indices for loss plot

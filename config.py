@@ -16,6 +16,13 @@ class Configurator(object):
         #################
         # Print every {} epochs
         self.LOG_INTERVAL = 1
+        ########################
+        # Input feature settings
+        ########################
+        # Each position record is assigned to a "burst" of movement,
+        # where each burst lasts for the specified time duration.
+        # Model performance may change with different burst definitions.
+        self.BURST_TIME_THRESHOLD = 300  # seconds
         ####################
         ## Training settings
         ####################
