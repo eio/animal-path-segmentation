@@ -23,7 +23,7 @@ def calculate_velocity_bearing_turn(df, burst_time_threshold):
     # Calculate temporal differences between consecutive rows
     time_diff = calculate_time_differences(df)  # seconds
     # Identify the bursts
-    burst_indices = identify_bursts(df, burst_time_threshold)
+    burst_indices = identify_bursts(time_diff, burst_time_threshold)
     # Calculate velocity, bearing, and turn angle for each burst
     for i in range(len(burst_indices) - 1):
         start_idx = burst_indices[i]
@@ -48,11 +48,10 @@ def calculate_velocity_bearing_turn(df, burst_time_threshold):
     return df
 
 
-def identify_bursts(df, burst_time_threshold):
-    dt = np.diff(df[TIMESTAMP])
+def identify_bursts(time_diff, burst_time_threshold):
     burst_indices = [0]
-    for i in range(1, len(dt)):
-        if dt[i - 1] > burst_time_threshold:
+    for i in range(1, len(time_diff)):
+        if time_diff[i - 1] > burst_time_threshold:
             burst_indices.append(i)
     # print("burst_indices:", len(burst_indices))
     return burst_indices
@@ -64,11 +63,13 @@ def calculate_velocity(dist, dt):
 
 
 def calculate_bearing(lat_rad, lon_rad):
-    x = np.cos(lat_rad) * np.sin(np.diff(lon_rad))
+    # Pad with last value to ensure shapes match
+    lon_diff = np.diff(np.concatenate([lon_rad, [lon_rad.iloc[-1]]]))
+    # Calculate the bearing
+    x = np.cos(lat_rad) * np.sin(lon_diff)
     y = (np.sin(lat_rad) * np.cos(lat_rad)) - (
         np.cos(lat_rad) * np.sin(lat_rad) * np.cos(lon_rad - lon_rad.iloc[0])
     )
-    # Handle wrap-around at the international dateline
     bearing = np.degrees(np.arctan2(x, y)) % 360
     return bearing
 
