@@ -6,12 +6,12 @@ from numpy import (
 )
 
 # Local scripts
-from AnimalPathsDataset import N_CATEGORIES
+from consts import N_CATEGORIES
 from save_and_load import (
     write_output_csv,
     write_performance_eval,
 )
-from utils.general import (
+from utils import (
     color,
     time_since,
     categories_from_label,
@@ -100,13 +100,13 @@ def test_process(
             total_correct += correct
             # Generate CSV output rows if needed
             if WRITE_OUTPUT_CSV:
-                # Get the NormalizeFeatures transform from the test_loader
-                normalize_transform = test_loader.dataset.transform.transforms[0]
-                # Retrieve the stored, non-normalized features
-                original_features = normalize_transform.orig_features
+                # # Get the NormalizeFeatures transform from the test_loader
+                # normalize_transform = test_loader.dataset.transform.transforms[0]
+                # # Retrieve the stored, non-normalized features
+                # original_features = normalize_transform.orig_features
                 # Build the CSV output rows with predictions and input features
                 rows = make_csv_output_rows(
-                    is_correct, guesses, labels, batch["id"], original_features
+                    is_correct, guesses, labels, batch["id"], inputs_tensor.tolist()
                 )
                 # Store the CSV output row for writing later
                 csv_out_rows += rows

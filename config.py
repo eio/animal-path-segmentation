@@ -1,7 +1,7 @@
 import torch
 
 # Local scripts
-from AnimalPathsDataset import N_FEATURES, N_CATEGORIES
+from consts import N_FEATURES, N_CATEGORIES
 from save_and_load import write_config_json
 
 
@@ -16,13 +16,6 @@ class Configurator(object):
         #################
         # Print every {} epochs
         self.LOG_INTERVAL = 1
-        ########################
-        # Input feature settings
-        ########################
-        # Each position record is assigned to a "burst" of movement,
-        # where each burst lasts for the specified time duration.
-        # Model performance may change with different burst definitions.
-        self.BURST_TIME_THRESHOLD = 300  # seconds
         ####################
         ## Training settings
         ####################
@@ -52,7 +45,9 @@ class Configurator(object):
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.001
+        self.INIT_LEARNING_RATE = 0.0001
+        self.MOMENTUM = 0.5
+        # self.WEIGHT_DECAY = TODO
         #####################
         ## Scheduler settings
         #####################

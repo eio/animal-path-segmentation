@@ -9,7 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
 from config import Configurator
-from utils.general import start_script, finish_script
+from utils import start_script, finish_script
 from train_process import train_process
 from test_process import test_process
 from AnimalDataLoaders import (
@@ -71,11 +71,15 @@ def Optimizer(model):
     """
     Create the optimizer
     """
-    # return optim.SGD(model.parameters(), lr=INIT_LEARNING_RATE, momentum=0.5,)
-    return optim.Adam(
+    return optim.SGD(
         model.parameters(),
         lr=cfg.INIT_LEARNING_RATE,
+        momentum=cfg.MOMENTUM,
     )
+    # return optim.Adam(
+    #     model.parameters(),
+    #     lr=cfg.INIT_LEARNING_RATE,
+    # )
 
 
 def Scheduler(optimizer):
@@ -137,10 +141,7 @@ def main(LOAD_SAVED_MODEL=False):
         # Set the model to evaluation mode
         model.eval()
         # Load the custom AnimalPathsDataset `Testing` data
-        test_loader = build_final_test_data_loader(
-            cfg.BATCH_SIZE,
-            cfg.BURST_TIME_THRESHOLD,
-        )
+        test_loader = build_final_test_data_loader(cfg.BATCH_SIZE)
         # Test the loaded model on the test data
         test_process(
             model,
@@ -157,10 +158,7 @@ def main(LOAD_SAVED_MODEL=False):
         # Set the model to training mode
         model.train()
         # Load the custom AnimalPathsDataset `Training` data
-        loaders = build_data_loaders(
-            cfg.BATCH_SIZE,
-            cfg.BURST_TIME_THRESHOLD,
-        )
+        loaders = build_data_loaders(cfg.BATCH_SIZE)
         train_loader = loaders["train"]
         test_loader = loaders["test"]
         # Keep track of completed epoch indices for loss plot

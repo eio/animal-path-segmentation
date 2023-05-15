@@ -1,6 +1,6 @@
 import csv
 import json
-from numpy import argmin
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from torch import save as torch_save, load as torch_load
@@ -12,8 +12,8 @@ from sklearn.metrics import (
 )
 
 # Local scripts
-from utils.general import color
-from AnimalPathsDataset import (
+from utils import color
+from consts import (
     IDENTIFIER,
     FEATURE_COLUMNS,
     SEASON_LABELS,
@@ -32,6 +32,7 @@ OUTPUT = "output/"
 SAVED_MODEL_PATH = OUTPUT + "saved_model/model+optimizer.pth"
 EVALUATION_PATH = OUTPUT + "performance/model_evaluation.txt"
 CONFUSION_MATRIX_PATH = OUTPUT + "performance/confusion_matrix.png"
+CONFUSION_MATRIX_PERCENT_PATH = OUTPUT + "performance/confusion_matrix_percent.png"
 ACCURACY_PLOT_PATH = OUTPUT + "performance/accuracy.png"
 LOSS_PLOT_PATH = OUTPUT + "performance/loss.png"
 CONFIG_PATH = OUTPUT + "config.json"
@@ -85,7 +86,6 @@ def write_config_json(cfg):
             "LR_PATIENCE": cfg.LR_PATIENCE,
             "LR_FACTOR": cfg.LR_FACTOR,
             "LR_MIN": cfg.LR_MIN,
-            "BURST_TIME_THRESHOLD": cfg.BURST_TIME_THRESHOLD,
         }
         json.dump(output, jsonfile, indent=4)
 
@@ -126,6 +126,20 @@ def write_performance_eval(labels, guesses):
         )
         # Note: F1 scores range from 0 to 1, with higher scores being generally better
         print("Model evaluation report saved to `{}`".format(EVALUATION_PATH))
+    # Plot the standard confusion matrix (counts)
+    plot_confusion_matrix(confmat, CONFUSION_MATRIX_PATH)
+    # Calculate the percentage values by dividing each element in the confusion matrix
+    # by the sum of the corresponding row (i.e., the total number of instances of that class)
+    # and multiplying by 100. The np.round function is used to round the results to two decimal places.
+    confmat_percent = np.round(confmat / confmat.sum(axis=1)[:, np.newaxis] * 100, 2)
+    # Plot the relative percentage confusion matrix (%)
+    plot_confusion_matrix(confmat_percent, CONFUSION_MATRIX_PERCENT_PATH)
+
+
+def plot_confusion_matrix(confmat, outpath):
+    """
+    Generate a colorized confusion matrix image
+    """
     # Generate the confusion matrix plot display
     cmd = ConfusionMatrixDisplay(
         confusion_matrix=confmat, display_labels=SEASON_LABELS.keys()
@@ -137,7 +151,7 @@ def write_performance_eval(labels, guesses):
     ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)
     ax.set_ylabel("Ground Truth Label", fontsize=12, fontweight="bold", labelpad=10)
     # Save the confusion matrix image
-    plt.savefig(CONFUSION_MATRIX_PATH)
+    plt.savefig(outpath)
 
 
 def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
@@ -182,7 +196,7 @@ def print_best(completed_epochs, avg_test_losses, test_accuracies):
     """
     Print the epoch with the best loss and accuracy results
     """
-    best_epoch = argmin(avg_test_losses)
+    best_epoch = np.argmin(avg_test_losses)
     best_loss = avg_test_losses[best_epoch]
     best_accuracy = test_accuracies[best_epoch]
     best_epoch_num = completed_epochs[best_epoch]

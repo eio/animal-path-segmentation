@@ -2,6 +2,7 @@
 __pycache__/
 __archive/
 
+output/config.json
 output/saved_model/*.pth
 output/predictions/*.csv
 output/predictions/epochs/*.csv

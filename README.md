@@ -1,5 +1,9 @@
 # Usage
 
+## Preprocessing
+
+The `preprocessing/` directory contains scripts to add data labels, derive additional features, normalize, and split into training and test datasets.
+
 ## Training
 
 	py run_model.py

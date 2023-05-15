@@ -1,18 +1,25 @@
-import numpy as np
 from haversine import haversine, Unit
+import numpy as np
+import os, sys
+
+
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../../")
+sys.path.append(module_dir)
+# Local scripts
+from consts import *
 
 # Constants
 EARTH_RADIUS = 6371 * 1000  # meters
-# Define strings for column/feature names
-LATITUDE = "lat"
-LONGITUDE = "lon"
-TIMESTAMP = "timestamp"
-VELOCITY = "velocity"
-BEARING = "bearing"
-TURN_ANGLE = "turn_angle"
+# Each position record is assigned to a "burst" of movement,
+# where each burst lasts for the specified time duration.
+# Model performance may change with different burst definitions.
+BURST_TIME_THRESHOLD = 300  # seconds
 
 
-def calculate_velocity_bearing_turn(df, burst_time_threshold):
+def calculate_velocity_bearing_turn(df):
     # Ensure the index of the DataFrame is sequential after grouping
     df = df.reset_index(drop=True)
     # Convert latitude and longitude to radians
@@ -23,7 +30,7 @@ def calculate_velocity_bearing_turn(df, burst_time_threshold):
     # Calculate temporal differences between consecutive rows
     time_diff = calculate_time_differences(df)  # seconds
     # Identify the bursts
-    burst_indices = identify_bursts(time_diff, burst_time_threshold)
+    burst_indices = identify_bursts(time_diff)
     # Calculate velocity, bearing, and turn angle for each burst
     for i in range(len(burst_indices) - 1):
         start_idx = burst_indices[i]
@@ -48,10 +55,10 @@ def calculate_velocity_bearing_turn(df, burst_time_threshold):
     return df
 
 
-def identify_bursts(time_diff, burst_time_threshold):
+def identify_bursts(time_diff):
     burst_indices = [0]
     for i in range(1, len(time_diff)):
-        if time_diff[i - 1] > burst_time_threshold:
+        if time_diff[i - 1] > BURST_TIME_THRESHOLD:
             burst_indices.append(i)
     # print("burst_indices:", len(burst_indices))
     return burst_indices

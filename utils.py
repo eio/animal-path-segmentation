@@ -4,7 +4,7 @@ from numpy import array as np_array
 from torch import tensor, eye, max as torch_max
 
 # Local scripts
-from AnimalPathsDataset import SEASON_LABELS, N_CATEGORIES
+from consts import SEASON_LABELS, N_CATEGORIES
 
 # Reverse SEASON_LABELS dictionary so that onehot tuples are keys
 ONEHOT_LABELS = {tuple(v): k for k, v in SEASON_LABELS.items()}

@@ -14,15 +14,13 @@ VALIDATION_CSV = "data/validation.csv"
 FINAL_TEST_CSV = "data/Cranes_processed.csv"
 
 
-def build_data_loaders(batch_size, burst_time_threshold):
+def build_data_loaders(batch_size):
     print("Building datasets...")
     # Create the Train dataset
     train_dataset = APD.AnimalPathsDataset(
         csv_file=TRAIN_CSV,
-        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
-                APD.NormalizeFeatures(),
                 APD.ToTensor(),
             ]
         ),
@@ -31,10 +29,8 @@ def build_data_loaders(batch_size, burst_time_threshold):
     # Create the Test dataset
     validation_dataset = APD.AnimalPathsDataset(
         csv_file=VALIDATION_CSV,
-        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
-                APD.NormalizeFeatures(),
                 APD.ToTensor(),
             ]
         ),
@@ -61,15 +57,13 @@ def build_data_loaders(batch_size, burst_time_threshold):
     }
 
 
-def build_final_test_data_loader(batch_size, burst_time_threshold):
+def build_final_test_data_loader(batch_size):
     """ Final, unlabeled, test dataset """
     print("Building dataset...")
     dataset = APD.AnimalPathsDataset(
         csv_file=FINAL_TEST_CSV,
-        burst_time_threshold=burst_time_threshold,
         transform=Compose(
             [
-                APD.NormalizeFeatures(),
                 APD.ToTensor(),
             ]
         ),
