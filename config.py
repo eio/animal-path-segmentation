@@ -2,7 +2,7 @@ import torch
 
 # Local scripts
 from utils.consts import N_FEATURES, N_CATEGORIES
-from save_and_load import write_config_json
+from utils.save_and_load import write_config_json
 
 
 class Configurator(object):
@@ -47,7 +47,7 @@ class Configurator(object):
         #####################
         self.INIT_LEARNING_RATE = 0.0001
         self.MOMENTUM = 0.5
-        # self.WEIGHT_DECAY = TODO
+        self.WEIGHT_DECAY = 0  # default = 0
         #####################
         ## Scheduler settings
         #####################

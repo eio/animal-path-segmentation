@@ -16,7 +16,7 @@ from AnimalDataLoaders import (
     build_data_loaders,
     build_final_test_data_loader,
 )
-from save_and_load import (
+from utils.save_and_load import (
     load_model,
     plot_loss,
     plot_accuracy,
@@ -75,6 +75,7 @@ def Optimizer(model):
         model.parameters(),
         lr=cfg.INIT_LEARNING_RATE,
         momentum=cfg.MOMENTUM,
+        weight_decay=cfg.WEIGHT_DECAY,
     )
     # return optim.Adam(
     #     model.parameters(),

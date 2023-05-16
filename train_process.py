@@ -2,7 +2,7 @@ from numpy import count_nonzero as count_true
 from torch import tensor, long as torch_long
 
 # Local scripts
-from save_and_load import save_model
+from utils.save_and_load import save_model
 from utils.misc import (
     color,
     time_since,

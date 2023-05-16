@@ -10,7 +10,13 @@ from sklearn.metrics import (
     confusion_matrix,
     ConfusionMatrixDisplay,
 )
+import os, sys
 
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../")
+sys.path.append(module_dir)
 # Local scripts
 from utils.misc import color
 from utils.consts import (
@@ -83,6 +89,8 @@ def write_config_json(cfg):
             "NUM_LAYERS": cfg.NUM_LAYERS,
             "DROPOUT": cfg.DROPOUT,
             "INIT_LEARNING_RATE": cfg.INIT_LEARNING_RATE,
+            "SGD_MOMENTUM": cfg.MOMENTUM,
+            "SGD_WEIGHT_DECAY": cfg.WEIGHT_DECAY,
             "LR_PATIENCE": cfg.LR_PATIENCE,
             "LR_FACTOR": cfg.LR_FACTOR,
             "LR_MIN": cfg.LR_MIN,
