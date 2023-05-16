@@ -15,6 +15,7 @@ LONGITUDE = "lon"  # +1 feature
 # Original time column
 TIMESTAMP = "timestamp"
 # Derived movement features
+DISTANCE = "dist_from_prev_loc"
 VELOCITY = "velocity"
 BEARING = "bearing"
 TURN_ANGLE = "turn_angle"

@@ -2,7 +2,14 @@
 
 ## Preprocessing
 
-The `preprocessing/` directory contains scripts to add data labels, derive additional features, normalize, and split into training and test datasets.
+The `preprocessing/` directory contains scripts to add training labels, derive additional features, normalize, and split the data into training and test datasets.
+
+The expected order of these operations is specified with the numerical prefix in subdirectory names:
+
+- `1_add_labels/`
+- `2_add_derived_features/`
+- `3_normalize_data/`
+- `4_split_data/`
 
 ## Training
 

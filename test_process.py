@@ -106,7 +106,7 @@ def test_process(
                 # original_features = normalize_transform.orig_features
                 # Build the CSV output rows with predictions and input features
                 rows = make_csv_output_rows(
-                    is_correct, guesses, labels, batch["id"], inputs_tensor.tolist()
+                    is_correct, guesses, labels, batch["id"], inputs_tensor.tolist()[0]
                 )
                 # Store the CSV output row for writing later
                 csv_out_rows += rows

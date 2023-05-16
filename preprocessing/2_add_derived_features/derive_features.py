@@ -48,8 +48,10 @@ if __name__ == "__main__":
     df = df[df[VELOCITY].notna()]
     df = df[df[BEARING].notna()]
     df = df[df[TURN_ANGLE].notna()]
-    # Delete datetime column now that we're done using it
-    del df[TIMESTAMP]
+    # # Delete datetime column now that we're done using it
+    # del df[TIMESTAMP]
 
     # Save the dataframe to a CSV file
-    df.to_csv("Cranes_all_features.csv")
+    outname = "Cranes_all_features.csv"
+    df.to_csv(outname, index=False)
+    print("CSV with derived feature columns saved to: `{}`".format(outname))

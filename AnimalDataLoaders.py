@@ -11,7 +11,7 @@ SHUFFLE = False
 # Setup paths for accessing data
 TRAIN_CSV = "data/train.csv"
 VALIDATION_CSV = "data/validation.csv"
-FINAL_TEST_CSV = "data/Cranes_processed.csv"
+FINAL_TEST_CSV = "data/test.csv"
 
 
 def build_data_loaders(batch_size):

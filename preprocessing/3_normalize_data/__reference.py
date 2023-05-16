@@ -1,6 +1,3 @@
-# "Rather dirty" implementation of 0-1 scaling and z-scoring for 1D tensors:
-
-
 class ScaleValues(object):
     """
     Scales tensor values according to a given max (and optionally min) range.
