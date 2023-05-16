@@ -1,15 +1,27 @@
-import math
 from datetime import datetime
-from numpy import array as np_array
-from torch import tensor, eye, max as torch_max
+from pandas import DataFrame
+import numpy as np
+import torch
+import json
+import math
+import os, sys
 
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../")
+sys.path.append(module_dir)
 # Local scripts
-from consts import SEASON_LABELS, N_CATEGORIES
+from utils.consts import SEASON_LABELS, N_CATEGORIES, FEATURE_COLUMNS
+from utils.Normalizer import ScaleValues
+
+# The JSON file containing the normalization scalars
+NORMS_JSON = "utils/norms.json"
 
 # Reverse SEASON_LABELS dictionary so that onehot tuples are keys
 ONEHOT_LABELS = {tuple(v): k for k, v in SEASON_LABELS.items()}
 # Create identity matrix
-ONEHOT_MATRIX = eye(N_CATEGORIES)
+ONEHOT_MATRIX = torch.eye(N_CATEGORIES)
 
 
 class color:
@@ -47,7 +59,7 @@ def categories_from_label(labels_tensor):
         for label in sequence:
             # Convert the one-hot tensor to a string label
             categories.append(onehot_to_string(label))
-    return np_array(categories)
+    return np.array(categories)
 
 
 def categories_from_output(output_tensor):
@@ -57,7 +69,7 @@ def categories_from_output(output_tensor):
     (where output_tensor.shape = [batch_size, seq_length, num_Categories])
     """
     # Get max values and indices along the last (i.e. Categories) dimension
-    max_values, max_indices = torch_max(output_tensor, dim=-1)
+    max_values, max_indices = torch.max(output_tensor, dim=-1)
     # Map max indices to labels
     categories = []
     for sequence in max_indices:
@@ -66,7 +78,32 @@ def categories_from_output(output_tensor):
             label = ONEHOT_MATRIX[index]
             # Convert the one-hot tensor to a string label
             categories.append(onehot_to_string(label))
-    return np_array(categories)
+    return np.array(categories)
+
+
+def inverse_normalize_features(features_tensor):
+    """
+    Apply inverse normalization to get the original feature data
+    to be saved alongside the model predictions in the output CSV
+    """
+    # Remove the initial dimension of size 1
+    reshaped_data = np.squeeze(features_tensor)
+    # Convert tensor to a numpy array
+    numpy_data = reshaped_data.numpy()
+    # Create a pandas DataFrame
+    df = DataFrame(numpy_data, columns=FEATURE_COLUMNS)
+    # Load the normalization scalars from the JSON file
+    with open(NORMS_JSON, "r") as f:
+        norm_config = json.load(f)
+    # Apply inverse normalization to each column
+    for column, (min_val, max_val) in norm_config.items():
+        # print("Inverse scaling column: `{}`...".format(column))
+        scaler = ScaleValues(max_range=max_val, min_range=min_val)
+        # Apply inverse normalization and save only scalar value (.item()) from tensor
+        df[column] = df[column].apply(
+            lambda x: scaler.inverse_normalize(torch.tensor(x)).item()
+        )
+    return df.values.tolist()
 
 
 def make_csv_output_rows(is_correct, guess, label, identifier, features):

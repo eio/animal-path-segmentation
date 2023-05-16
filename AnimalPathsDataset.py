@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 
 # Local scripts
-from consts import *
+from utils.consts import *
 
 
 class AnimalPathsDataset(torch.utils.data.Dataset):
@@ -55,14 +55,9 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = df[[IDENTIFIER] + FEATURE_COLUMNS + [STATUS]]
         # Replace 'Fall' with 'Autumn' because OCD
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
-
         # # Print some stats about the data
         # print("Label stats:\n{}".format(df[STATUS].value_counts()))
         # print("Individual stats:\n{}".format(df[IDENTIFIER].value_counts()))
-
-        # TODO:
-        # - load normalization statistics (e.g. from JSON), and apply to df
-        # - toTensor
         return df
 
     def __getitem__(self, idx):

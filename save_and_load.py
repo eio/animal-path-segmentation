@@ -12,8 +12,8 @@ from sklearn.metrics import (
 )
 
 # Local scripts
-from utils import color
-from consts import (
+from utils.misc import color
+from utils.consts import (
     IDENTIFIER,
     FEATURE_COLUMNS,
     SEASON_LABELS,
@@ -145,7 +145,7 @@ def plot_confusion_matrix(confmat, outpath):
         confusion_matrix=confmat, display_labels=SEASON_LABELS.keys()
     )
     # Plot the confusion matrix
-    fig, ax = plt.subplots(figsize=(9, 9))
+    fig, ax = plt.subplots(figsize=(10, 10))
     cmd.plot(ax=ax)
     # Customize the axis labels
     ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)

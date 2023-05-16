@@ -3,13 +3,13 @@ from torch import tensor, long as torch_long
 
 # Local scripts
 from save_and_load import save_model
-from utils import (
+from utils.misc import (
     color,
     time_since,
     categories_from_label,
     categories_from_output,
 )
-from consts import N_CATEGORIES
+from utils.consts import N_CATEGORIES
 
 
 def train(model, optimizer, criterion, labels_tensor, inputs_tensor):

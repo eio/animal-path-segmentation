@@ -1,7 +1,7 @@
 import torch
 
 # Local scripts
-from consts import N_FEATURES, N_CATEGORIES
+from utils.consts import N_FEATURES, N_CATEGORIES
 from save_and_load import write_config_json
 
 

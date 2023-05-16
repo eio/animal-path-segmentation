@@ -10,7 +10,7 @@ module_dir = os.path.join(script_dir, "../../")
 sys.path.append(module_dir)
 # Local scripts
 from consts import *
-from ScaleValues import *
+from utils.Normalizer import ScaleValues
 
 # Labeled data with derived features
 INPUT_CSV = "Cranes_all_features.csv"

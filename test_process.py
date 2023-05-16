@@ -1,21 +1,18 @@
 from torch import no_grad, tensor
-from numpy import (
-    mean,
-    count_nonzero as count_true,
-    concatenate as npcat,
-)
+import numpy as np
 
 # Local scripts
-from consts import N_CATEGORIES
+from utils.consts import N_CATEGORIES
 from save_and_load import (
     write_output_csv,
     write_performance_eval,
 )
-from utils import (
+from utils.misc import (
     color,
     time_since,
     categories_from_label,
     categories_from_output,
+    inverse_normalize_features,
     make_csv_output_rows,
 )
 
@@ -95,18 +92,16 @@ def test_process(
             # Check if the predictions array matches the labels array
             is_correct = guesses == labels
             # Count the number of correct predictions
-            correct = count_true(is_correct)
+            correct = np.count_nonzero(is_correct)
             # Keep a running tally of correct guesses
             total_correct += correct
             # Generate CSV output rows if needed
             if WRITE_OUTPUT_CSV:
-                # # Get the NormalizeFeatures transform from the test_loader
-                # normalize_transform = test_loader.dataset.transform.transforms[0]
-                # # Retrieve the stored, non-normalized features
-                # original_features = normalize_transform.orig_features
+                # Get the non-normalized features for output in the CSV
+                orig_features = inverse_normalize_features(inputs_tensor)
                 # Build the CSV output rows with predictions and input features
                 rows = make_csv_output_rows(
-                    is_correct, guesses, labels, batch["id"], inputs_tensor.tolist()[0]
+                    is_correct, guesses, labels, batch["id"], orig_features
                 )
                 # Store the CSV output row for writing later
                 csv_out_rows += rows
@@ -131,7 +126,7 @@ def test_process(
                 )
     print("Finished Testing for Epoch {}.".format(epoch))
     print("Test:")
-    print("\tAvg. Loss: {}".format(mean(test_losses)))
+    print("\tAvg. Loss: {}".format(np.mean(test_losses)))
     percent_correct = total_correct / test_loader.dataset.total_records() * 100
     test_accuracy = round(percent_correct, 2)
     print("\t{}Test Accuracy: {}%{}".format(color.BOLD, test_accuracy, color.END))
@@ -145,6 +140,9 @@ def test_process(
         write_output_csv(outname, csv_out_rows)
     if final_test:
         # Generate confusion matrix and other performance metrics
-        write_performance_eval(npcat(all_labels), npcat(all_guesses))
+        write_performance_eval(
+            np.concatenate(all_labels),
+            np.concatenate(all_guesses),
+        )
     # Return the test losses and accuracy from this epoch
     return test_losses, test_accuracy
