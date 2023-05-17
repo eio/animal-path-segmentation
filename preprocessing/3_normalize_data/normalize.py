@@ -9,7 +9,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 module_dir = os.path.join(script_dir, "../../")
 sys.path.append(module_dir)
 # Local scripts
-from consts import *
+from utils.consts import *
 from utils.Normalizer import ScaleValues
 
 # Labeled data with derived features
@@ -34,7 +34,7 @@ def normalize():
         COSTIME: (-1, 1),
         VELOCITY: (df[VELOCITY].min(), df[VELOCITY].max()),
         BEARING: (0, 360),
-        TURN_ANGLE: (df[TURN_ANGLE].min(), df[TURN_ANGLE].max()),  # (-180, 180),
+        TURN_ANGLE: (-180, 180),
     }
 
     # Apply scaling to each column

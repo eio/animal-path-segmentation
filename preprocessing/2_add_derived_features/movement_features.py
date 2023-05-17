@@ -8,7 +8,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 module_dir = os.path.join(script_dir, "../../")
 sys.path.append(module_dir)
 # Local scripts
-from consts import *
+from utils.consts import *
 
 # Planet Earth's average radius in meters
 EARTH_RADIUS = 6371 * 1000  # meters
@@ -97,7 +97,10 @@ def calculate_turn_angle(bearing):
     Calculate turning angle for each trajectory waypoint
     """
     turn_angle = np.degrees(
-        np.arccos(np.clip(np.cos(np.radians(bearing - np.roll(bearing, 1))), -1, 1))
+        np.arctan2(
+            np.sin(np.radians(bearing - np.roll(bearing, 1))),
+            np.cos(np.radians(bearing - np.roll(bearing, 1))),
+        )
     )
     # Fill NaN values with 0
     turn_angle[np.isnan(turn_angle)] = 0

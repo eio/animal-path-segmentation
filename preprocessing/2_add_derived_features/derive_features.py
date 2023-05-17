@@ -7,7 +7,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 module_dir = os.path.join(script_dir, "../../")
 sys.path.append(module_dir)
 # Local scripts
-from consts import *
+from utils.consts import *
 from time_features import *
 from movement_features import *
 

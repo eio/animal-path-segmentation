@@ -9,7 +9,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 module_dir = os.path.join(script_dir, "../../")
 sys.path.append(module_dir)
 # Local scripts
-from consts import *
+from utils.consts import *
 
 # Seconds in a year (i.e., 365.25 * 24 * 60 * 60)
 SECONDS_IN_YEAR = 31_536_000  # seconds
