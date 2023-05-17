@@ -89,7 +89,7 @@ def inverse_normalize_features(features_tensor):
     # Remove the initial dimension of size 1
     reshaped_data = np.squeeze(features_tensor)
     # Convert tensor to a numpy array
-    numpy_data = reshaped_data.numpy()
+    numpy_data = reshaped_data.cpu().numpy()
     # Create a pandas DataFrame
     df = DataFrame(numpy_data, columns=FEATURE_COLUMNS)
     # Load the normalization scalars from the JSON file
