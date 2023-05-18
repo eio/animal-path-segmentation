@@ -1,5 +1,5 @@
 from numpy import count_nonzero as count_true
-from torch import tensor, long as torch_long
+from torch import tensor, long as torch_long, argmax
 
 # Local scripts
 from utils.save_and_load import save_model
@@ -37,6 +37,21 @@ def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
         output_tensor.view(-1, N_CATEGORIES),
         labels_tensor.view(-1, N_CATEGORIES),
     )
+    # ##################
+    # ## HPC DIFF START
+    # ##################
+    # # Loss function expects labels_tensor input to be torch.Long dtype
+    # labels_tensor = labels_tensor.to(torch_long)
+    # # Convert the one-hot encoded target tensor to class labels
+    # labels = argmax(labels_tensor, dim=2).squeeze()
+    # # Compute loss
+    # loss = criterion(
+    #     output_tensor.view(-1, N_CATEGORIES),
+    #     labels.view(-1),
+    # )
+    # #################
+    # ## HPC DIFF END
+    # #################
     # Backward pass and optimize
     loss.backward()
     optimizer.step()
