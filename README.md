@@ -20,9 +20,9 @@ Training the model consists of:
 - letting it make guesses
 - telling it when it’s wrong
 
-The trained model is also tested on a validation dataset.
-
 The number of epochs, other hyperparameters, and output intervals are defined in `config.py`
+
+Each epoch, the model trains on `data/train.csv` and tests on `data/validation.csv`
 
 The training process logic is in `train_and_test/train_process.py`
 
@@ -35,7 +35,7 @@ The testing process logic is in `train_and_test/test_process.py`
 
 Adding the `-l` (or `--load`) flag will load the saved model + optimizer state from `output/saved_model/model+optimizer.pth`
 
-The loaded model will then be tested against the final test dataset as specified at the top of `AnimalDataLoaders.py`
+The loaded model will then be tested against the final test dataset (`data/test.csv`) as specified at the top of `data_loaders/data_loaders.py`
 
 
 # Data Inputs
