@@ -1,6 +1,0 @@
-'Anthropoides paradiseus',
-'Anthropoides virgo',
-'Grus grus',
-'Grus nigricollis',
-'Grus vipio'
-'Balearica pavonina' <<< (but there's "Not enough data" for all Balearica records)

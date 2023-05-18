@@ -1,0 +1,90 @@
+657665445 - (Anthropoides paradiseus)  -  182 records
+657665450 - (Anthropoides paradiseus)  -  142 records
+>>> Total record count for (Anthropoides paradiseus):  506 records
+
+179958646 - (Anthropoides virgo)  -  10821 records
+179960228 - (Anthropoides virgo)  -  16153 records
+179960229 - (Anthropoides virgo)  -  5686 records
+530432447 - (Anthropoides virgo)  -  2374 records
+526969998 - (Anthropoides virgo)  -  4064 records
+526972935 - (Anthropoides virgo)  -  2657 records
+527241063 - (Anthropoides virgo)  -  2118 records
+527665453 - (Anthropoides virgo)  -  5161 records
+530438609 - (Anthropoides virgo)  -  640 records
+542803025 - (Anthropoides virgo)  -  6441 records
+527243992 - (Anthropoides virgo)  -  1949 records
+509948058 - (Anthropoides virgo)  -  317 records
+509948489 - (Anthropoides virgo)  -  88 records
+509948864 - (Anthropoides virgo)  -  531 records
+530445355 - (Anthropoides virgo)  -  5539 records
+631046603 - (Anthropoides virgo)  -  2886 records
+631046596 - (Anthropoides virgo)  -  6641 records
+530454895 - (Anthropoides virgo)  -  1596 records
+631046605 - (Anthropoides virgo)  -  1301 records
+509945725 - (Anthropoides virgo)  -  194 records
+631046593 - (Anthropoides virgo)  -  1084 records
+631046597 - (Anthropoides virgo)  -  257 records
+530454749 - (Anthropoides virgo)  -  262 records
+918956809 - (Anthropoides virgo)  -  656 records
+963155796 - (Anthropoides virgo)  -  27800 records
+963157875 - (Anthropoides virgo)  -  25968 records
+963160836 - (Anthropoides virgo)  -  23393 records
+921524646 - (Anthropoides virgo)  -  346 records
+918962990 - (Anthropoides virgo)  -  279 records
+918964288 - (Anthropoides virgo)  -  400 records
+919024466 - (Anthropoides virgo)  -  193 records
+918975026 - (Anthropoides virgo)  -  265 records
+919018254 - (Anthropoides virgo)  -  305 records
+928019824 - (Anthropoides virgo)  -  508 records
+919033047 - (Anthropoides virgo)  -  1318 records
+919036381 - (Anthropoides virgo)  -  405 records
+921525462 - (Anthropoides virgo)  -  473 records
+928025127 - (Anthropoides virgo)  -  331 records
+918999578 - (Anthropoides virgo)  -  89 records
+942236216 - (Anthropoides virgo)  -  371 records
+942190207 - (Anthropoides virgo)  -  221 records
+918987402 - (Anthropoides virgo)  -  63 records
+918997112 - (Anthropoides virgo)  -  309 records
+918995456 - (Anthropoides virgo)  -  299 records
+955325494 - (Anthropoides virgo)  -  73 records
+>>> Total record count for (Anthropoides virgo):  173646 records
+
+10722504 - (Grus grus)  -  14899 records
+10819975 - (Grus grus)  -  40115 records
+10819972 - (Grus grus)  -  61154 records
+10836630 - (Grus grus)  -  111523 records
+10836626 - (Grus grus)  -  54549 records
+28715112 - (Grus grus)  -  41071 records
+28714952 - (Grus grus)  -  43218 records
+146932155 - (Grus grus)  -  66936 records
+195375963 - (Grus grus)  -  322422 records
+542788498 - (Grus grus)  -  5236 records
+542788851 - (Grus grus)  -  1192 records
+959785201 - (Grus grus)  -  682 records
+959790025 - (Grus grus)  -  684 records
+959787093 - (Grus grus)  -  485 records
+959797348 - (Grus grus)  -  798 records
+959736994 - (Grus grus)  -  793 records
+954263119 - (Grus grus)  -  181 records
+>>> Total record count for (Grus grus):  780837 records
+
+4125423 - (Grus nigricollis)  -  4435 records
+4125640 - (Grus nigricollis)  -  3151 records
+4125985 - (Grus nigricollis)  -  3596 records
+665575761 - (Grus nigricollis)  -  23980 records
+666398166 - (Grus nigricollis)  -  7335 records
+>>> Total record count for (Grus nigricollis):  46932 records
+
+234544890 - (Grus vipio)  -  11642 records
+234544577 - (Grus vipio)  -  15138 records
+234544720 - (Grus vipio)  -  11655 records
+234544478 - (Grus vipio)  -  60803 records
+234543899 - (Grus vipio)  -  36847 records
+542106841 - (Grus vipio)  -  2997 records
+542102791 - (Grus vipio)  -  3534 records
+542104928 - (Grus vipio)  -  1896 records
+>>> Total record count for (Grus vipio):  156154 records
+
+
+'Balearica pavonina' records also exist in the original events dataset, 
+but there's "Not enough data" for all Balearica records
