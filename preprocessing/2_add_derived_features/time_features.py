@@ -4,10 +4,8 @@ import math
 import os, sys
 
 # Get the absolute path to the directory containing the current script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-# Append the subdirectory containing the module to import to sys.path
-module_dir = os.path.join(script_dir, "../../")
-sys.path.append(module_dir)
+# and append to sys.path the subdirectory containing the local module to import
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 # Local scripts
 from utils.consts import *
 
