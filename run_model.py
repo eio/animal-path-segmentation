@@ -17,10 +17,9 @@ from AnimalDataLoaders import (
     build_final_test_data_loader,
 )
 from utils.save_and_load import (
-    load_model,
-    plot_loss,
-    plot_accuracy,
+    write_accuracy_and_loss_plots,
     print_best,
+    load_model,
 )
 
 # Initialize settings and hyperparameters
@@ -192,6 +191,7 @@ def main(LOAD_SAVED_MODEL=False):
                 script_start,
                 cfg.DEVICE,
                 cfg.LOG_INTERVAL,
+                cfg.OUTPUT_EVERY,
                 epoch,
             )
             # Find the average train/test losses
@@ -217,12 +217,27 @@ def main(LOAD_SAVED_MODEL=False):
                     epoch, get_runtime(script_start)
                 )
             )
+            if epoch % cfg.OUTPUT_EVERY == 0:
+                # Output accuracy and loss plots
+                # at the specified interval of epochs
+                write_accuracy_and_loss_plots(
+                    completed_epochs,
+                    avg_train_losses,
+                    avg_test_losses,
+                    train_accuracies,
+                    test_accuracies,
+                )
         ##############################################################
         ## Output model performance evaluation chart across all epochs
         ##############################################################
-        plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
-        plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
-        # Print the best epoch along with its loss and accuracy
+        write_accuracy_and_loss_plots(
+            completed_epochs,
+            avg_train_losses,
+            avg_test_losses,
+            train_accuracies,
+            test_accuracies,
+        )
+        # Print the Best Epoch along with its loss and accuracy
         print_best(completed_epochs, avg_test_losses, test_accuracies)
     ##########
     ## The End

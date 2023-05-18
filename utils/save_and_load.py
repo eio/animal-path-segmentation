@@ -111,6 +111,20 @@ def write_output_csv(csv_name, predictions):
             writer.writerow(predictions[i])
 
 
+def write_accuracy_and_loss_plots(
+    completed_epochs,
+    avg_train_losses,
+    avg_test_losses,
+    train_accuracies,
+    test_accuracies,
+):
+    """
+    Output model accuracy and loss plots
+    """
+    plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
+    plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
+
+
 def write_performance_eval(labels, guesses):
     """
     Evaluate model performance using:

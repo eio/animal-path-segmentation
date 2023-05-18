@@ -15,12 +15,18 @@ class Configurator(object):
         ## Print settings
         #################
         # Print every {} epochs
-        self.LOG_INTERVAL = 1
+        self.LOG_INTERVAL = 1  # epochs
         ####################
         ## Training settings
         ####################
         self.N_EPOCHS = 100
         self.BATCH_SIZE = 1
+        #############################
+        ## Evaluation output settings
+        #############################
+        # Output accuracy/loss plots, confusion matrix,
+        # and other model evaluation metrics to `output/`
+        self.OUTPUT_EVERY = 3  # epochs
         #################
         ## Model settings
         #################

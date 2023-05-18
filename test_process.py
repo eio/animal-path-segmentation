@@ -21,10 +21,6 @@ from utils.misc import (
     make_csv_output_rows,
 )
 
-# Specify the epochs interval
-# to save an output CSV of predictions
-SAVE_PREDICTIONS_EVERY = 20  # epochs
-
 
 def test(model, criterion, labels_tensor, inputs_tensor):
     # Get the sequence length of this input
@@ -68,6 +64,7 @@ def test_process(
     script_start,
     device,
     log_interval,
+    OUTPUT_EVERY,
     epoch=None,
 ):
     # Determine if this is the final test
@@ -78,7 +75,7 @@ def test_process(
         epoch = 1
     # Check if an output CSV should be produced this epoch
     WRITE_OUTPUT_CSV = False
-    if (epoch % SAVE_PREDICTIONS_EVERY == 0) or (final_test == True):
+    if (epoch % OUTPUT_EVERY == 0) or (final_test == True):
         WRITE_OUTPUT_CSV = True
     print("\nStart Testing for Epoch {}...".format(epoch))
     # Initialize losses
