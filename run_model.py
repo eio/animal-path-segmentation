@@ -9,7 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
 from config import Configurator
-from utils.misc import start_script, finish_script
+from utils.misc import start_script, finish_script, get_runtime
 from train_process import train_process
 from test_process import test_process
 from AnimalDataLoaders import (
@@ -212,6 +212,11 @@ def main(LOAD_SAVED_MODEL=False):
             completed_epochs.append(epoch)
             print("[Epoch {}] Avg. Train Loss: {}".format(epoch, train_loss))
             print("[Epoch {}] Avg. Test Loss: {}".format(epoch, test_loss))
+            print(
+                "[Epoch {}] Current runtime: {} seconds".format(
+                    epoch, get_runtime(script_start)
+                )
+            )
         ##############################################################
         ## Output model performance evaluation chart across all epochs
         ##############################################################

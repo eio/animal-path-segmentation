@@ -155,6 +155,15 @@ def time_since(since):
     return "%dm %ds" % (m, s)
 
 
+def get_runtime(script_start):
+    """
+    Get the current script runtime
+    """
+    now = current_time()
+    runtime = round(now - script_start, 3)
+    return runtime
+
+
 def start_script():
     """
     Print the time the script starts
