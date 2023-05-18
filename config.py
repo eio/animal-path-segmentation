@@ -27,7 +27,7 @@ class Configurator(object):
         # Output accuracy/loss plots every {} epochs
         self.PLOT_EVERY = 10  # epochs
         # Save an output CSV of predictions every {} epochs
-        self.SAVE_PREDICTIONS_EVERY = 20  # epochs
+        self.SAVE_PREDICTIONS_EVERY = 10  # epochs
         #################
         ## Model settings
         #################
@@ -45,8 +45,7 @@ class Configurator(object):
         # The recommended values for dropout probability are
         # between 0.1 and 0.5, depending on the task and model size
         self.DROPOUT = 0.2  # default = 0
-        # Guideline: if the model has less than
-        # tens-of-thousands of trainable parameters,
+        # Guideline: if the model has less than tens-of-thousands of trainable parameters,
         # regularization may not be needed. For an RNN:
         # trainable_params = ((input_size + hidden_size) * hidden_size + hidden_size) * num_layers
         #####################
@@ -62,14 +61,12 @@ class Configurator(object):
         self.LR_FACTOR = 0.1  # decrease LR by factor of {}
         self.LR_PATIENCE = 10  # wait {} epochs before decreasing
         self.LR_MIN = 1e-6  # minimum learning rate
-        # Hyperparameters for `lr_scheduler.StepLR`
-        # SCHEDULER_STEP = 90  # every {} epochs...
-        # SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
-        #####################
-        ## Save configuration
-        #####################
-        # Save the current configuration to file
-        # alongside the final model results
+        # # Hyperparameters for `lr_scheduler.StepLR`:
+        # self.SCHEDULER_STEP = 90  # every {} epochs...
+        # self.SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
+        #############################
+        ## Save current configuration
+        #############################
         self.save()
         ################
         ## PyTorch setup
@@ -79,7 +76,7 @@ class Configurator(object):
 
     def save(self):
         """
-        Save current configuration to an output file
+        Save current configuration to JSON file in `output/`
         """
         write_config_json(self)
 
@@ -89,10 +86,9 @@ class Configurator(object):
         """
         # cuDNN uses nondeterministic algorithms which are disabled here
         torch.backends.cudnn.enabled = False
-        # To ensure repeatable experiments, we set a random seed
+        # Set random seed to ensure repeatable experiments
         # for anything using random number generation
-        random_seed = 1111
-        torch.manual_seed(random_seed)
+        torch.manual_seed(1111)
 
     def get_device(self):
         """
