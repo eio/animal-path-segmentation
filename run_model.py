@@ -191,7 +191,7 @@ def main(LOAD_SAVED_MODEL=False):
                 script_start,
                 cfg.DEVICE,
                 cfg.LOG_INTERVAL,
-                cfg.OUTPUT_EVERY,
+                cfg.SAVE_PREDICTIONS_EVERY,
                 epoch,
             )
             # Find the average train/test losses
@@ -217,7 +217,7 @@ def main(LOAD_SAVED_MODEL=False):
                     epoch, get_runtime(script_start)
                 )
             )
-            if epoch % cfg.OUTPUT_EVERY == 0:
+            if epoch % cfg.PLOT_EVERY == 0:
                 # Output accuracy and loss plots
                 # at the specified interval of epochs
                 write_accuracy_and_loss_plots(

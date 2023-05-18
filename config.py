@@ -24,9 +24,10 @@ class Configurator(object):
         #############################
         ## Evaluation output settings
         #############################
-        # Output accuracy/loss plots, confusion matrix,
-        # and other model evaluation metrics to `output/`
-        self.OUTPUT_EVERY = 3  # epochs
+        # Output accuracy/loss plots every {} epochs
+        self.PLOT_EVERY = 10  # epochs
+        # Save an output CSV of predictions every {} epochs
+        self.SAVE_PREDICTIONS_EVERY = 20  # epochs
         #################
         ## Model settings
         #################
