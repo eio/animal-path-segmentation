@@ -103,7 +103,7 @@ def write_output_csv(csv_name, predictions):
     Write model predictions to output CSV
     """
     output_csv = PREDICTIONS_DIR + csv_name
-    print("Write the predictions output to: `{}`...".format(output_csv))
+    print("Predictions saved to: `{}`...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(OUTPUT_FIELDNAMES)

@@ -10,9 +10,9 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 # Local scripts
 from config import Configurator
 from utils.misc import start_script, finish_script, get_runtime
-from train_process import train_process
-from test_process import test_process
-from AnimalDataLoaders import (
+from train_and_test.train_process import train_process
+from train_and_test.test_process import test_process
+from data_loaders.data_loaders import (
     build_data_loaders,
     build_final_test_data_loader,
 )

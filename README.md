@@ -22,11 +22,11 @@ Training the model consists of:
 
 The trained model is also tested on a validation dataset.
 
-The number of epochs and other hyperparameters are defined in `config.py`
+The number of epochs, other hyperparameters, and output intervals are defined in `config.py`
 
-The training process logic is in `train_process.py`
+The training process logic is in `train_and_test/train_process.py`
 
-The testing process logic is in `test_process.py`
+The testing process logic is in `train_and_test/test_process.py`
 
 
 ## Testing with a trained model
@@ -40,14 +40,16 @@ The loaded model will then be tested against the final test dataset as specified
 
 # Data Inputs
 
-The custom PyTorch dataset logic is stored in `AnimalPathsDataset.py`
+The PyTorch Custom Dataset logic is in `data_loaders/AnimalPathsDataset.py`
 
-This is loaded by PyTorch DataLoaders in `AnimalDataLoaders.py`, which is also where the input CSV filepaths are defined.
+This is loaded by PyTorch DataLoaders in `data_loaders/data_loaders.py`, which is also where the input CSV filepaths are defined.
+
+The actual data files (`train.csv`, `validation.csv`, and `test.csv`) should be stored in `data/`.
 
 
 # File Outputs
 
-All functions that save files can be found in `save_and_load.py`
+All functions that save files can be found in `utils/save_and_load.py`
 
 All generated output files can be found in `output/`
 
@@ -58,4 +60,6 @@ All generated output files can be found in `output/`
 
 # Utilities
 
-Miscellaneous utility functions (e.g. time and data transformations) are stored in `utils.py`
+Miscellaneous utility functions (e.g. time and data transformations) are stored in `utils/misc.py`
+
+Widely-used constants, normalization code, and normalization config JSON are also stored in `utils/`

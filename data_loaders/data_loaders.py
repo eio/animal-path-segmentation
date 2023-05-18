@@ -1,8 +1,14 @@
-import torch
+from torch.utils.data import DataLoader
 from torchvision.transforms import Compose
+import os, sys
 
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../")
+sys.path.append(module_dir)
 # Local scripts
-import AnimalPathsDataset as APD
+import data_loaders.AnimalPathsDataset as APD
 
 # Shuffling time-series data is generally not appropriate,
 # and preserving the order of the records is important
@@ -28,14 +34,14 @@ def build_data_loaders(batch_size):
     print("\tValidation dataset built.")
     print("Building data loaders...")
     # Build the Train loader
-    train_loader = torch.utils.data.DataLoader(
+    train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=SHUFFLE,
     )
     print("\tTraining loader built.")
     # Build the Test loader
-    validation_loader = torch.utils.data.DataLoader(
+    validation_loader = DataLoader(
         validation_dataset,
         batch_size=batch_size,
         shuffle=SHUFFLE,
@@ -54,7 +60,7 @@ def build_final_test_data_loader(batch_size):
         csv_file=FINAL_TEST_CSV,
     )
     print("Building data loader...")
-    loader = torch.utils.data.DataLoader(
+    loader = DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=SHUFFLE,

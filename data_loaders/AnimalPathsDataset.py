@@ -3,7 +3,13 @@ import torch
 import numpy as np
 import pandas as pd
 from datetime import datetime
+import os, sys
 
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../")
+sys.path.append(module_dir)
 # Local scripts
 from utils.consts import *
 

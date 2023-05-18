@@ -1,6 +1,12 @@
 from numpy import count_nonzero as count_true
 from torch import tensor, long as torch_long, argmax
+import os, sys
 
+# Get the absolute path to the directory containing the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Append the subdirectory containing the module to import to sys.path
+module_dir = os.path.join(script_dir, "../")
+sys.path.append(module_dir)
 # Local scripts
 from utils.save_and_load import save_model
 from utils.misc import (
