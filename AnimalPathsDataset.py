@@ -52,12 +52,11 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Load the animal location data
         df = pd.read_csv(csv_file)
         # Drop all columns except the ones we care about
-        df = df[[IDENTIFIER] + FEATURE_COLUMNS + [STATUS]]
+        df = df[[IDENTIFIER, STATUS, TIMESTAMP] + FEATURE_COLUMNS]
         # Replace 'Fall' with 'Autumn' because OCD
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
-        # # Print some stats about the data
-        # print("Label stats:\n{}".format(df[STATUS].value_counts()))
-        # print("Individual stats:\n{}".format(df[IDENTIFIER].value_counts()))
+        # Sort by timestamp to ensure sequential order
+        df = df.sort_values(TIMESTAMP)
         return df
 
     def __getitem__(self, idx):
@@ -72,9 +71,10 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         trajectory = self.trajectories.get_group(identifier).reset_index(drop=True)
         # Get the seasonal segmentation labels
         labels = trajectory[STATUS]
-        # Delete the ID and Status columns, since we don't want them as data features
+        # Delete the ID, Status, and Timestamp columns, since we don't want them as data features
         del trajectory[IDENTIFIER]
         del trajectory[STATUS]
+        del trajectory[TIMESTAMP]
         # Build the sample dictionary, including the animal ID for CSV output
         sample = {
             "id": identifier,
