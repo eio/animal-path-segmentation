@@ -135,25 +135,23 @@ def write_performance_eval(labels, guesses):
         # Note: F1 scores range from 0 to 1, with higher scores being generally better
         print("Model evaluation report saved to `{}`".format(EVALUATION_PATH))
     # Plot the standard confusion matrix (counts)
-    plot_confusion_matrix(confmat, CONFUSION_MATRIX_PATH)
-    # Calculate the percentage values by dividing each element in the confusion matrix
-    # by the sum of the corresponding row (i.e., the total number of instances of that class)
-    # and multiplying by 100. The np.round function is used to round the results to two decimal places.
-    confmat_percent = np.round(confmat / confmat.sum(axis=1)[:, np.newaxis] * 100, 2)
-    # Plot the relative percentage confusion matrix (%)
-    plot_confusion_matrix(confmat_percent, CONFUSION_MATRIX_PERCENT_PATH)
+    plot_confusion_matrix(labels, guesses, CONFUSION_MATRIX_PATH)
+    # # Calculate the percentage values by dividing each element in the confusion matrix
+    # # by the sum of the corresponding row (i.e., the total number of instances of that class)
+    # # and multiplying by 100. The np.round function is used to round the results to two decimal places.
+    # confmat_percent = np.round(confmat / confmat.sum(axis=1)[:, np.newaxis] * 100, 2)
+    # # Plot the relative percentage confusion matrix (%)
+    # plot_confusion_matrix(confmat_percent, CONFUSION_MATRIX_PERCENT_PATH)
 
 
-def plot_confusion_matrix(confmat, outpath):
+def plot_confusion_matrix(labels, guesses, outpath):
     """
     Generate a colorized confusion matrix image
     """
     # Generate the confusion matrix plot display
-    cmd = ConfusionMatrixDisplay(
-        confusion_matrix=confmat, display_labels=SEASON_LABELS.keys()
-    )
+    cmd = ConfusionMatrixDisplay.from_predictions(labels, guesses)
     # Plot the confusion matrix
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(9, 9))
     cmd.plot(ax=ax)
     # Customize the axis labels
     ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)
