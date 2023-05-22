@@ -84,8 +84,9 @@ def inverse_normalize_features(features_tensor):
     Apply inverse normalization to get the original feature data
     to be saved alongside the model predictions in the output CSV
     """
-    # Remove the initial dimension of size 1
-    reshaped_data = np.squeeze(features_tensor)
+    # Remove only the outer dimension by specifying axis=0.
+    # Inner dimemsions are preserved with shape of: [num_waypoints, num_features]
+    reshaped_data = np.squeeze(features_tensor, axis=0)
     # Convert tensor to a numpy array
     numpy_data = reshaped_data.cpu().numpy()
     # Create a pandas DataFrame
