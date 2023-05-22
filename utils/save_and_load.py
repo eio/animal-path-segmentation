@@ -170,6 +170,8 @@ def plot_confusion_matrix(labels, guesses, outpath):
     ax.set_ylabel("Ground Truth Label", fontsize=12, fontweight="bold", labelpad=10)
     # Save the confusion matrix image
     plt.savefig(outpath)
+    # Close the figure
+    plt.close(fig)
 
 
 def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
@@ -189,6 +191,8 @@ def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.savefig(LOSS_PLOT_PATH)
     print("\nLoss plot saved to: `{}`".format(LOSS_PLOT_PATH))
+    # Close the figure
+    plt.close(fig)
 
 
 def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
@@ -208,6 +212,8 @@ def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.savefig(ACCURACY_PLOT_PATH)
     print("Accuracy plot saved to: `{}`\n".format(ACCURACY_PLOT_PATH))
+    # Close the figure
+    plt.close(fig)
 
 
 def print_best(completed_epochs, avg_test_losses, test_accuracies):
