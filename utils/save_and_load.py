@@ -21,6 +21,9 @@ from utils.consts import (
     IDENTIFIER,
     FEATURE_COLUMNS,
     SEASON_LABELS,
+    PERFORMANCE_DIR,
+    PREDICTIONS_DIR,
+    SAVED_MODEL_DIR,
 )
 
 # Setup CSV output columns
@@ -31,20 +34,31 @@ OUTPUT_FIELDNAMES = [
     IDENTIFIER,
 ] + FEATURE_COLUMNS
 
+
 # Setup output paths
-OUTPUT = "output/"
-SAVED_MODEL_PATH = OUTPUT + "saved_model/model+optimizer.pth"
-EVALUATION_PATH = OUTPUT + "performance/model_evaluation.txt"
-CONFUSION_MATRIX_PATH = OUTPUT + "performance/confusion_matrix.png"
-CONFUSION_MATRIX_PERCENT_PATH = OUTPUT + "performance/confusion_matrix_percent.png"
-ACCURACY_PLOT_PATH = OUTPUT + "performance/accuracy.png"
-LOSS_PLOT_PATH = OUTPUT + "performance/loss.png"
-CONFIG_PATH = OUTPUT + "config.json"
-PREDICTIONS_DIR = OUTPUT + "predictions/"
+SAVED_MODEL_PATH = SAVED_MODEL_DIR + "model+optimizer.pth"
+EVALUATION_PATH = PERFORMANCE_DIR + "model_evaluation.txt"
+CONFUSION_MATRIX_PATH = PERFORMANCE_DIR + "confusion_matrix.png"
+CONFUSION_MATRIX_PERCENT_PATH = PERFORMANCE_DIR + "confusion_matrix_percent.png"
+ACCURACY_PLOT_PATH = PERFORMANCE_DIR + "accuracy.png"
+LOSS_PLOT_PATH = PERFORMANCE_DIR + "loss.png"
+CONFIG_PATH = "config.json"
 LINE = "\n------------------------------------------------------\n\n"
 
 
-def save_model(epoch, model, optimizer):
+def make_directory(directory_name):
+    try:
+        os.mkdir(directory_name)
+        print(f"Created directory: '{directory_name}'")
+    except FileExistsError:
+        print(f"Directory '{directory_name}' already exists.")
+    except Exception as e:
+        print(
+            f"An error occurred while creating directory '{directory_name}': {str(e)}"
+        )
+
+
+def save_model(epoch, model, optimizer, OUTPUT_DIR):
     """
     Save the current state of the Model
     so we can load the latest state later on
@@ -56,17 +70,18 @@ def save_model(epoch, model, optimizer):
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
         },
-        SAVED_MODEL_PATH,
+        OUTPUT_DIR + SAVED_MODEL_PATH,
     )
 
 
-def load_model(model, optimizer):
+def load_model(model, optimizer, OUTPUT_DIR):
     """
     Load and return the pre-trained Model,
     Optimizer, and final epoch number
     """
-    print("Loading the saved model: `{}`".format(SAVED_MODEL_PATH))
-    saved_state = torch_load(SAVED_MODEL_PATH)
+    savedir = OUTPUT_DIR + SAVED_MODEL_PATH
+    print("Loading the saved model: `{}`".format(savedir))
+    saved_state = torch_load(savedir)
     model.load_state_dict(saved_state["model_state_dict"])
     optimizer.load_state_dict(saved_state["optimizer_state_dict"])
     print("Model loaded.")
@@ -78,9 +93,12 @@ def write_config_json(cfg):
     Write hyperparameter configuration
     to output JSON
     """
-    print("Current config saved to: `{}`\n".format(CONFIG_PATH))
-    with open(CONFIG_PATH, "w", newline="") as jsonfile:
+    outdir = cfg.OUTPUT_DIR + CONFIG_PATH
+    print("Current config saved to: `{}`\n".format(outdir))
+    with open(outdir, "w", newline="") as jsonfile:
         output = {
+            "MODEL": cfg.MODEL,
+            "OPTIMIZER": cfg.OPTIMIZER,
             "N_EPOCHS": cfg.N_EPOCHS,
             "BATCH_SIZE": cfg.BATCH_SIZE,
             "HIDDEN_SIZE": cfg.HIDDEN_SIZE,
@@ -96,11 +114,11 @@ def write_config_json(cfg):
         json.dump(output, jsonfile, indent=4)
 
 
-def write_output_csv(csv_name, predictions):
+def write_output_csv(csv_name, predictions, OUTPUT_DIR):
     """
     Write model predictions to output CSV
     """
-    output_csv = PREDICTIONS_DIR + csv_name
+    output_csv = OUTPUT_DIR + PREDICTIONS_DIR + csv_name
     print("Predictions saved to: `{}`...".format(output_csv))
     with open(output_csv, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -115,15 +133,16 @@ def write_accuracy_and_loss_plots(
     avg_test_losses,
     train_accuracies,
     test_accuracies,
+    OUTPUT_DIR,
 ):
     """
     Output model accuracy and loss plots
     """
-    plot_loss(completed_epochs, avg_train_losses, avg_test_losses)
-    plot_accuracy(completed_epochs, train_accuracies, test_accuracies)
+    plot_loss(completed_epochs, avg_train_losses, avg_test_losses, OUTPUT_DIR)
+    plot_accuracy(completed_epochs, train_accuracies, test_accuracies, OUTPUT_DIR)
 
 
-def write_performance_eval(labels, guesses):
+def write_performance_eval(labels, guesses, OUTPUT_DIR):
     """
     Evaluate model performance using:
     - the accuracy score
@@ -132,7 +151,7 @@ def write_performance_eval(labels, guesses):
     """
     confmat = confusion_matrix(labels, guesses)
     # Generate a text file with the confusion matrix and other metrics
-    with open(EVALUATION_PATH, "w") as f:
+    with open(OUTPUT_DIR + EVALUATION_PATH, "w") as f:
         f.write("[ Model Evaluation ]\n{}".format(LINE))
         f.write("Accuracy Score:\t\t{}\n".format(accuracy_score(labels, guesses)))
         f.write("{}Confusion Matrix:\n\n{}\n".format(LINE, confmat))
@@ -147,7 +166,7 @@ def write_performance_eval(labels, guesses):
         # Note: F1 scores range from 0 to 1, with higher scores being generally better
         print("Model evaluation report saved to `{}`".format(EVALUATION_PATH))
     # Plot the standard confusion matrix (counts)
-    plot_confusion_matrix(labels, guesses, CONFUSION_MATRIX_PATH)
+    plot_confusion_matrix(labels, guesses, OUTPUT_DIR + CONFUSION_MATRIX_PATH)
     # # Calculate the percentage values by dividing each element in the confusion matrix
     # # by the sum of the corresponding row (i.e., the total number of instances of that class)
     # # and multiplying by 100. The np.round function is used to round the results to two decimal places.
@@ -156,7 +175,7 @@ def write_performance_eval(labels, guesses):
     # plot_confusion_matrix(confmat_percent, CONFUSION_MATRIX_PERCENT_PATH)
 
 
-def plot_confusion_matrix(labels, guesses, outpath):
+def plot_confusion_matrix(labels, guesses, outdir):
     """
     Generate a colorized confusion matrix image
     """
@@ -169,16 +188,17 @@ def plot_confusion_matrix(labels, guesses, outpath):
     ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)
     ax.set_ylabel("Ground Truth Label", fontsize=12, fontweight="bold", labelpad=10)
     # Save the confusion matrix image
-    plt.savefig(outpath)
+    plt.savefig(outdir)
     # Close the figure
     plt.close(fig)
 
 
-def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
+def plot_loss(completed_epochs, avg_train_losses, avg_test_losses, OUTPUT_DIR):
     """
     Generate a plot showing the loss-per-epoch
     for both the training and test datasets
     """
+    outdir = OUTPUT_DIR + LOSS_PLOT_PATH
     fig = plt.figure()
     ax = fig.gca()
     plt.scatter(completed_epochs, avg_train_losses, color="blue")
@@ -189,17 +209,18 @@ def plot_loss(completed_epochs, avg_train_losses, avg_test_losses):
     # Force integer X-axis tick marks,
     # since fractional epochs aren't a thing
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.savefig(LOSS_PLOT_PATH)
-    print("\nLoss plot saved to: `{}`".format(LOSS_PLOT_PATH))
+    plt.savefig(outdir)
+    print("\nLoss plot saved to: `{}`".format(outdir))
     # Close the figure
     plt.close(fig)
 
 
-def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
+def plot_accuracy(completed_epochs, train_accuracies, test_accuracies, OUTPUT_DIR):
     """
     Generate a plot showing the accuracy-per-epoch
     for both the training and test datasets
     """
+    outdir = OUTPUT_DIR + ACCURACY_PLOT_PATH
     fig = plt.figure()
     ax = fig.gca()
     plt.scatter(completed_epochs, train_accuracies, color="blue")
@@ -210,8 +231,8 @@ def plot_accuracy(completed_epochs, train_accuracies, test_accuracies):
     # Force integer X-axis tick marks,
     # since fractional epochs aren't a thing
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.savefig(ACCURACY_PLOT_PATH)
-    print("Accuracy plot saved to: `{}`\n".format(ACCURACY_PLOT_PATH))
+    plt.savefig(outdir)
+    print("Accuracy plot saved to: `{}`\n".format(outdir))
     # Close the figure
     plt.close(fig)
 

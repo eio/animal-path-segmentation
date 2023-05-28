@@ -64,7 +64,15 @@ def train(model, optimizer, criterion, labels_tensor, inputs_tensor):
 
 
 def train_process(
-    optimizer, model, criterion, train_loader, script_start, device, log_interval, epoch
+    OUTPUT_DIR,
+    optimizer,
+    model,
+    criterion,
+    train_loader,
+    script_start,
+    device,
+    log_interval,
+    epoch,
 ):
     print("\nStart Training for Epoch #{}...".format(epoch))
     print("\nCurrent learning rate: {}".format(optimizer.param_groups[0]["lr"]))
@@ -112,6 +120,6 @@ def train_process(
     #####################
     ## Save the Model  ##
     #####################
-    save_model(epoch, model, optimizer)
+    save_model(epoch, model, optimizer, OUTPUT_DIR)
     # Return the train losses and accuracy from this epoch
     return train_losses, train_accuracy

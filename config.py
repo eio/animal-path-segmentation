@@ -1,8 +1,15 @@
 import torch
 
 # Local scripts
-from utils.consts import N_FEATURES, N_CATEGORIES
-from utils.save_and_load import write_config_json
+from utils.consts import (
+    N_FEATURES,
+    N_CATEGORIES,
+    SAVED_MODEL_DIR,
+    PERFORMANCE_DIR,
+    PREDICTIONS_DIR,
+    EPOCHS_PREDICTIONS_DIR,
+)
+from utils.save_and_load import write_config_json, make_directory
 
 
 class Configurator(object):
@@ -11,6 +18,13 @@ class Configurator(object):
     """
 
     def __init__(self):
+        ####################################
+        ## Details defined in `run_model.py`
+        ####################################
+        self.MODEL = "RNN"
+        # self.MODEL = "LSTM"
+        self.OPTIMIZER = "SGD"
+        # self.OPTIMIZER = "ADAM"
         #################
         ## Print settings
         #################
@@ -64,6 +78,21 @@ class Configurator(object):
         # # Hyperparameters for `lr_scheduler.StepLR`:
         # self.SCHEDULER_STEP = 90  # every {} epochs...
         # self.SCHEDULER_GAMMA = 0.1  # ...multiply LR by {}
+        #################################
+        ## Create unique output directory
+        #################################
+        self.OUTPUT_DIR = "output/{}_{}_e{}_hs{}_nl{}_d{}_lr{}_m{}_wd{}/".format(
+            self.MODEL,
+            self.OPTIMIZER,
+            self.N_EPOCHS,
+            self.HIDDEN_SIZE,
+            self.NUM_LAYERS,
+            self.DROPOUT,
+            self.INIT_LEARNING_RATE,
+            self.MOMENTUM,
+            self.WEIGHT_DECAY,
+        )
+        self.create_output_directories()
         #############################
         ## Save current configuration
         #############################
@@ -97,3 +126,10 @@ class Configurator(object):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print("Running with device: {}".format(device))
         return device
+
+    def create_output_directories(self):
+        make_directory(self.OUTPUT_DIR)
+        make_directory(self.OUTPUT_DIR + SAVED_MODEL_DIR)
+        make_directory(self.OUTPUT_DIR + PERFORMANCE_DIR)
+        make_directory(self.OUTPUT_DIR + PREDICTIONS_DIR)
+        make_directory(self.OUTPUT_DIR + EPOCHS_PREDICTIONS_DIR)

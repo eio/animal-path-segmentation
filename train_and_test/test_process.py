@@ -25,10 +25,6 @@ from utils.misc import (
     make_csv_output_rows,
 )
 
-# Specify the epochs interval
-# to save an output CSV of predictions
-SAVE_PREDICTIONS_EVERY = 20  # epochs
-
 
 def test(model, criterion, labels_tensor, inputs_tensor):
     # Get the sequence length of this input
@@ -66,6 +62,7 @@ def test(model, criterion, labels_tensor, inputs_tensor):
 
 
 def test_process(
+    OUTPUT_DIR,
     model,
     criterion,
     test_loader,
@@ -162,12 +159,17 @@ def test_process(
         else:
             outname = "epochs/epoch_{}.csv".format(epoch)
         # Write the predicted path segmentation labels to an output CSV
-        write_output_csv(outname, csv_out_rows)
+        write_output_csv(
+            outname,
+            csv_out_rows,
+            OUTPUT_DIR,
+        )
     if final_test:
         # Generate confusion matrix and other performance metrics
         write_performance_eval(
             np.concatenate(all_labels),
             np.concatenate(all_guesses),
+            OUTPUT_DIR,
         )
     # Return the test losses and accuracy from this epoch
     return test_losses, test_accuracy

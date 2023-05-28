@@ -9,6 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
 from config import Configurator
+from utils.consts import N_FEATURES, N_CATEGORIES
 from utils.misc import start_script, finish_script, get_runtime
 from train_and_test.train_process import train_process
 from train_and_test.test_process import test_process
@@ -21,9 +22,6 @@ from utils.save_and_load import (
     print_best,
     load_model,
 )
-
-# Initialize settings and hyperparameters
-cfg = Configurator()
 
 
 class Model(nn.Module):
@@ -66,7 +64,7 @@ def Criterion():
     return nn.CrossEntropyLoss()
 
 
-def Optimizer(model):
+def Optimizer(model, cfg):
     """
     Create the optimizer
     """
@@ -82,7 +80,7 @@ def Optimizer(model):
     # )
 
 
-def Scheduler(optimizer):
+def Scheduler(optimizer, cfg):
     """
     Create the learning-rate scheduler
     """
@@ -107,6 +105,8 @@ def main(LOAD_SAVED_MODEL=False):
     """
     # Set start time to keep track of runtime
     script_start = start_script()
+    # Initialize settings, hyperparameters, and output directory
+    cfg = Configurator()
     ###############################################
     ## Initialize the model and learning conditions
     ###############################################
@@ -121,8 +121,8 @@ def main(LOAD_SAVED_MODEL=False):
     ).to(cfg.DEVICE)
     # Define the loss function, optimizer, and scheduler
     criterion = Criterion()
-    optimizer = Optimizer(model)
-    scheduler = Scheduler(optimizer)
+    optimizer = Optimizer(model, cfg)
+    scheduler = Scheduler(optimizer, cfg)
     # Initialize losses/accuracies for plot output
     train_losses = []
     test_losses = []
@@ -137,13 +137,18 @@ def main(LOAD_SAVED_MODEL=False):
         #########################################################
         ## Load and test the previously saved model and optimizer
         #########################################################
-        model, optimizer, epoch = load_model(model, optimizer)
+        model, optimizer, epoch = load_model(
+            model,
+            optimizer,
+            cfg.OUTPUT_DIR,
+        )
         # Set the model to evaluation mode
         model.eval()
         # Load the custom AnimalPathsDataset `Testing` data
         test_loader = build_final_test_data_loader(cfg.BATCH_SIZE)
         # Test the loaded model on the test data
         test_process(
+            cfg.OUTPUT_DIR,
             model,
             criterion,
             test_loader,
@@ -174,6 +179,7 @@ def main(LOAD_SAVED_MODEL=False):
         for epoch in epoch_range:
             # Run the training process
             train_losses, train_accuracy = train_process(
+                cfg.OUTPUT_DIR,
                 optimizer,
                 model,
                 criterion,
@@ -185,6 +191,7 @@ def main(LOAD_SAVED_MODEL=False):
             )
             # Run the testing process
             test_losses, test_accuracy = test_process(
+                cfg.OUTPUT_DIR,
                 model,
                 criterion,
                 test_loader,
@@ -226,6 +233,7 @@ def main(LOAD_SAVED_MODEL=False):
                     avg_test_losses,
                     train_accuracies,
                     test_accuracies,
+                    cfg.OUTPUT_DIR,
                 )
         ##############################################################
         ## Output model performance evaluation chart across all epochs
@@ -236,6 +244,7 @@ def main(LOAD_SAVED_MODEL=False):
             avg_test_losses,
             train_accuracies,
             test_accuracies,
+            cfg.OUTPUT_DIR,
         )
         # Print the Best Epoch along with its loss and accuracy
         print_best(completed_epochs, avg_test_losses, test_accuracies)

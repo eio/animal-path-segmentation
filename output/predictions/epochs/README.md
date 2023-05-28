@@ -1,1 +1,0 @@
-CSV files with predictions from test epochs are output here based on `SAVE_PREDICTIONS_EVERY` in `test_process.py`

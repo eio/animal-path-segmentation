@@ -2,14 +2,10 @@
 __pycache__/
 __archive/
 
-output/config.json
-output/saved_model/*.pth
-output/predictions/*.csv
-output/predictions/epochs/*.csv
-output/performance/*.png
-output/performance/*.txt
-
 data/*.csv
+
+output/*/*
+
 preprocessing/*/*.csv
 preprocessing/*/*.txt
 preprocessing/*/*/*.csv

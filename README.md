@@ -51,12 +51,12 @@ The actual data files (`train.csv`, `validation.csv`, and `test.csv`) should be 
 
 All functions that save files can be found in `utils/save_and_load.py`
 
-All generated output files can be found in `output/`
+All generated output files can be found in `output/{UNIQUE_PARAMS_STRING}/`
 
-- During training, a saved `model+optimizer.pth` file is updated on each completed epoch and saved inside of `output/saved_model/`. During testing, when the script is run with `-l`, this is the file that is loaded.
-- When training is finished, the final loss and accuracy plots for all epochs are stored in `output/performance/`.
-- When testing a loaded model, the confusion matrix and classification report are also stored in `output/performance/`.
-- Predictions for each training epoch are stored in `output/predictions/epochs/`. During testing, when the script is run with `-l`, the final test predictions are stored as `output/predictions/final_results.csv`
+- During training, a saved `model+optimizer.pth` file is updated on each completed epoch and saved inside of `output/{UNIQUE_PARAMS_STRING}/saved_model/`. During testing, when the script is run with `-l`, this is the file that is loaded.
+- When training is finished, the final loss and accuracy plots for all epochs are stored in `output/{UNIQUE_PARAMS_STRING}/performance/`.
+- When testing a loaded model, the confusion matrix and classification report are also stored in `output/{UNIQUE_PARAMS_STRING}/performance/`.
+- Predictions for each training epoch are stored in `output/{UNIQUE_PARAMS_STRING}/predictions/epochs/`. During testing, when the script is run with `-l`, the final test predictions are stored as `output/{UNIQUE_PARAMS_STRING}/predictions/final_results.csv`
 
 # Utilities
 

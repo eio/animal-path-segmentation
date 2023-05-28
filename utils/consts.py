@@ -1,3 +1,8 @@
+# Output directory names
+SAVED_MODEL_DIR = "saved_model/"
+PERFORMANCE_DIR = "performance/"
+PREDICTIONS_DIR = "predictions/"
+EPOCHS_PREDICTIONS_DIR = PREDICTIONS_DIR + "epochs/"
 # One-hot encoding for seasonal labels
 SEASON_LABELS = {
     "Winter": [1, 0, 0, 0],
