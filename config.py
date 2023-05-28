@@ -51,7 +51,7 @@ class Configurator(object):
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.0001
+        self.INIT_LEARNING_RATE = 0.01
         self.MOMENTUM = 0.5
         self.WEIGHT_DECAY = 0  # default = 0
         #####################

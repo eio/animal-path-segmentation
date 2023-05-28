@@ -10,8 +10,7 @@ output/performance/*.png
 output/performance/*.txt
 
 data/*.csv
-data/preprocessing/split_data/*.csv
-data/preprocessing/add_labels/*.csv
-data/preprocessing/add_labels/*.txt
-data/preprocessing/add_labels/output/*.csv
-data/preprocessing/add_labels/segmentations/
+preprocessing/*/*.csv
+preprocessing/*/*.txt
+preprocessing/*/*/*.csv
+preprocessing/*/segmentations/

@@ -26,7 +26,7 @@ SINTIME = "sin_time"  # +1 feature
 COSTIME = "cos_time"  # +1 feature
 # UNIXTIME = "UnixTime"
 # YEAR = "Year"  #
-# SPECIES = "species"
+SPECIES = "species"
 # CONFIDENCE = "confidence"
 # # Stopover flag (binary)
 # STOPOVER = "stopover"
