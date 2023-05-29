@@ -11,6 +11,8 @@ The expected order of these operations is specified with the numerical prefix in
 - `3_normalize_data/`
 - `4_split_data/`
 
+NOTE: `__add_environmental_features/` is not integrated into the workflow for now, but would go after `2_add_derived_features/`
+
 ## Training
 
 	py run_model.py

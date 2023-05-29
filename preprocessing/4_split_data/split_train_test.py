@@ -8,9 +8,9 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../
 # Local scripts
 from utils.consts import *
 
-# Labeled data with normalized features
+# Input: Labeled events data with normalized features
 INPUT_CSV = "Cranes_normalized.csv"
-# Setup paths for data output
+# Outputs:
 TRAIN_CSV = "train.csv"
 TEST_CSV = "test.csv"
 VALIDATION_CSV = "validation.csv"

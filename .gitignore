@@ -9,4 +9,5 @@ output/*/*
 preprocessing/*/*.csv
 preprocessing/*/*.txt
 preprocessing/*/*/*.csv
+preprocessing/*/*/*.grib
 preprocessing/*/segmentations/

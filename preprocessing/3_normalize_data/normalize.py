@@ -10,11 +10,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../
 from utils.consts import *
 from utils.Normalizer import ScaleValues
 
-# Labeled data with derived features
+# Input: Labeled events data with all features
 INPUT_CSV = "Cranes_all_features.csv"
-# Outputs from this script
+# Output: All of the above, but with model inputs normalized
+OUTPUT_CSV = "Cranes_normalized.csv"
+# More outputs from this script
 NORMS_OUT = "norms.json"
-CSV_OUT = "Cranes_normalized.csv"
 INVERSE_CSV_OUT = "Cranes_normalized_Inverse.csv"
 
 
@@ -49,8 +50,8 @@ def normalize():
 
     # Save the normalized dataframe
     print("Saving normalized data...")
-    df = df.to_csv(CSV_OUT, index=False)
-    print("Saved normalized data to: `{}`\n".format(CSV_OUT))
+    df = df.to_csv(OUTPUT_CSV, index=False)
+    print("Saved normalized data to: `{}`\n".format(OUTPUT_CSV))
 
 
 def inverse_normalize():
@@ -59,7 +60,7 @@ def inverse_normalize():
         norm_config = json.load(f)
 
     # Load the normalized dataframe
-    df_normalized = pd.read_csv(CSV_OUT)
+    df_normalized = pd.read_csv(OUTPUT_CSV)
 
     # Apply inverse normalization to each column
     for column, (min_val, max_val) in norm_config.items():

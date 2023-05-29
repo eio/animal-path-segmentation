@@ -9,10 +9,15 @@ from utils.consts import *
 from time_features import *
 from movement_features import *
 
+# Input: Labeled and trimmed events data
+INPUT_CSV = "Cranes_labeled.csv"
+# Output: All of the above + derived time & movement features
+OUTPUT_CSV = "Cranes_all_features.csv"
+
 
 if __name__ == "__main__":
     # Load the CSV file into a dataframe
-    df = pd.read_csv("Cranes_processed.csv")
+    df = pd.read_csv(INPUT_CSV)
     # Drop all columns except the ones we care about
     df = df[
         [
@@ -50,6 +55,5 @@ if __name__ == "__main__":
     # del df[TIMESTAMP]
 
     # Save the dataframe to a CSV file
-    outname = "Cranes_all_features.csv"
-    df.to_csv(outname, index=False)
-    print("CSV with derived feature columns saved to: `{}`".format(outname))
+    df.to_csv(OUTPUT_CSV, index=False)
+    print("CSV with derived feature columns saved to: `{}`".format(OUTPUT_CSV))
