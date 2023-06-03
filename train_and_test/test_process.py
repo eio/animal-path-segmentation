@@ -38,25 +38,25 @@ def test(model, criterion, labels_tensor, inputs_tensor):
     # labels_tensor.shape = [batch_size, seq_length]
     # NOTE: output_tensor.view(-1, X) reshapes the tensor to have X columns
     # which should match the OUTPUT_SIZE defined in `run_model.py`
-    loss = criterion(
-        output_tensor.view(-1, N_CATEGORIES),
-        labels_tensor.view(-1, N_CATEGORIES),
-    )
-    # ##################
-    # ## HPC DIFF START
-    # ##################
-    # # Loss function expects labels_tensor input to be torch.Long dtype
-    # labels_tensor = labels_tensor.to(torch_long)
-    # # Convert the one-hot encoded target tensor to class labels
-    # labels = argmax(labels_tensor, dim=2).squeeze()
-    # # Compute loss
     # loss = criterion(
     #     output_tensor.view(-1, N_CATEGORIES),
-    #     labels.view(-1),
+    #     labels_tensor.view(-1, N_CATEGORIES),
     # )
-    # #################
-    # ## HPC DIFF END
-    # #################
+    ##################
+    ## HPC DIFF START
+    ##################
+    # Loss function expects labels_tensor input to be torch.Long dtype
+    labels_tensor = labels_tensor.to(torch_long)
+    # Convert the one-hot encoded target tensor to class labels
+    labels = argmax(labels_tensor, dim=2).squeeze()
+    # Compute loss
+    loss = criterion(
+        output_tensor.view(-1, N_CATEGORIES),
+        labels.view(-1),
+    )
+    #################
+    ## HPC DIFF END
+    #################
     # Return the prediction and loss
     return output_tensor, loss.item()
 
