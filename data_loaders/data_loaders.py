@@ -8,10 +8,11 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 # Local scripts
 import data_loaders.AnimalPathsDataset as APD
 
-# Shuffling time-series data is generally not appropriate,
-# and preserving the order of the records is important
-# for training an RNN on this type of data.
-SHUFFLE = False
+# During the training process, shuffle the order
+# individual animal trajectories are presented to the model
+# rather than always showing the records in the same order.
+TRAIN_SHUFFLE = True
+TEST_SHUFFLE = False
 # Setup paths for accessing data
 TRAIN_CSV = "data/train.csv"
 VALIDATION_CSV = "data/validation.csv"
@@ -35,14 +36,14 @@ def build_data_loaders(batch_size):
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=SHUFFLE,
+        shuffle=TRAIN_SHUFFLE,
     )
     print("\tTraining loader built.")
     # Build the Test loader
     validation_loader = DataLoader(
         validation_dataset,
         batch_size=batch_size,
-        shuffle=SHUFFLE,
+        shuffle=TEST_SHUFFLE,
     )
     print("\tValidation loader built.")
     return {
@@ -61,7 +62,7 @@ def build_final_test_data_loader(batch_size):
     loader = DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=SHUFFLE,
+        shuffle=TEST_SHUFFLE,
     )
     return loader
 
