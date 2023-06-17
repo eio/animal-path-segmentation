@@ -10,4 +10,6 @@ The following sub-directories will be created inside of the new directory:
 
 Inside of these directories will be the saved model+optimizer state, performance plots and metrics, and raw prediction CSVs.
 
-Testing the saved model by running `run_model.py -l` will generate additional outputs in the subdirectories above.
+Testing the saved model by running `run_model.py -l` will generate additional outputs in the subdirectories above, including `/performance/model_evaluation.txt`
+
+Running `show_all_accuracy_scores.py` will walk through each directory per model run, parse `model_evaluation.txt` to find the accuracy score percentage, and print each model run with its associated accuracy score (ordered from best to worst score).

@@ -33,15 +33,15 @@ class Configurator(object):
         ####################
         ## Training settings
         ####################
-        self.N_EPOCHS = 100
+        self.N_EPOCHS = 60
         self.BATCH_SIZE = 1
         #############################
         ## Evaluation output settings
         #############################
         # Output accuracy/loss plots every {} epochs
-        self.PLOT_EVERY = 10  # epochs
+        self.PLOT_EVERY = 60  # epochs
         # Save an output CSV of predictions every {} epochs
-        self.SAVE_PREDICTIONS_EVERY = 10  # epochs
+        self.SAVE_PREDICTIONS_EVERY = 60  # epochs
         #################
         ## Model settings
         #################
@@ -58,14 +58,14 @@ class Configurator(object):
         self.NUM_LAYERS = 2  # default = 1
         # The recommended values for dropout probability are
         # between 0.1 and 0.5, depending on the task and model size
-        self.DROPOUT = 0.2  # default = 0
+        self.DROPOUT = 0.1  # default = 0
         # Guideline: if the model has less than tens-of-thousands of trainable parameters,
         # regularization may not be needed. For an RNN:
         # trainable_params = ((input_size + hidden_size) * hidden_size + hidden_size) * num_layers
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.01
+        self.INIT_LEARNING_RATE = 0.1
         self.MOMENTUM = 0.5
         self.WEIGHT_DECAY = 0  # default = 0
         #####################
