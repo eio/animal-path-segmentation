@@ -23,7 +23,7 @@ def transform_time_features(df):
     df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
     df[DAY] = df[TIMESTAMP].dt.day
     df[MONTH] = df[TIMESTAMP].dt.month
-    # df[YEAR] = df[TIMESTAMP].dt.year
+    df[YEAR] = df[TIMESTAMP].dt.year
     # df[UNIXTIME] = df[TIMESTAMP].apply(lambda x: x.timestamp())
     # Represent the time as a cyclic feature for seasons
     df[[SINTIME, COSTIME]] = df[TIMESTAMP].apply(lambda x: pd.Series(cyclic_time(x)))

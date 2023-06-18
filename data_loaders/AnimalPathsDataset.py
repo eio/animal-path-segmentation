@@ -59,13 +59,13 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Load the animal location data
         df = pd.read_csv(csv_file)
         # Drop all columns except the ones we care about
-        df = df[[IDENTIFIER, STATUS, TIMESTAMP] + FEATURE_COLUMNS]
-        # Add year column
-        df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
-        df[YEAR] = df[TIMESTAMP].dt.year
+        df = df[[IDENTIFIER, STATUS, TIMESTAMP, YEAR] + FEATURE_COLUMNS]
+        # Add ID_YEAR column to serve as a trajectory ID
         df[ID_YEAR] = df[IDENTIFIER].astype(str) + "-" + df[YEAR].astype(str)
         # Replace 'Fall' with 'Autumn' because OCD
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
+        # Convert TIMESTAMP column to datetime type
+        df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
         # Sort by ID+Year and Timestamp
         df = df.sort_values([ID_YEAR, TIMESTAMP])
         # Only grab the latest position update per day
