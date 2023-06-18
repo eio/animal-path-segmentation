@@ -10,7 +10,7 @@ import os, sys
 # and append to sys.path the subdirectory containing the local module to import
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 # Local scripts
-from utils.consts import SEASON_LABELS, N_CATEGORIES, FEATURE_COLUMNS
+from utils.consts import SEASON_LABELS, N_CATEGORIES, FEATURE_COLUMNS, TIMESTAMP
 from utils.Normalizer import ScaleValues
 
 # The JSON file containing the normalization scalars
@@ -105,7 +105,7 @@ def inverse_normalize_features(features_tensor):
     return df.values.tolist()
 
 
-def make_csv_output_rows(is_correct, guess, label, identifier, features):
+def make_csv_output_rows(is_correct, guess, label, trajectory_id, trajectory, features):
     """
     Build the final output row for the predictions CSV,
     including:
@@ -119,10 +119,16 @@ def make_csv_output_rows(is_correct, guess, label, identifier, features):
     rows = []
     # Combine first three lists into list of tuples
     data = list(zip(is_correct, guess, label))
+    # Extract the TIMESTAMP column values as a list
+    timestamps_list = trajectory[TIMESTAMP].tolist()
+    # Convert datetime values to strings
+    timestamps_strings = [
+        timestamp.strftime("%Y-%m-%d %H:%M:%S") for timestamp in timestamps_list
+    ]
     # Iterate over data and features, building and saving each row
-    for i, (d, f) in enumerate(zip(data, features)):
+    for i, (d, f, ts) in enumerate(zip(data, features, timestamps_strings)):
         # Combine the data into a single list for the CSV output row
-        row = list(d) + identifier.tolist() + f
+        row = list(d) + [trajectory_id] + [ts] + f
         rows.append(row)
     # Return the list of output rows
     return rows

@@ -1,6 +1,7 @@
 import csv
 import json
 import numpy as np
+from pandas import DataFrame
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from torch import save as torch_save, load as torch_load
@@ -18,21 +19,13 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 # Local scripts
 from utils.misc import color
 from utils.consts import (
-    IDENTIFIER,
-    FEATURE_COLUMNS,
+    LABEL,
+    OUTPUT_FIELDNAMES,
     SEASON_LABELS,
     PERFORMANCE_DIR,
     PREDICTIONS_DIR,
     SAVED_MODEL_DIR,
 )
-
-# Setup CSV output columns
-OUTPUT_FIELDNAMES = [
-    "Correct",
-    "Predicted",
-    "Actual",
-    IDENTIFIER,
-] + FEATURE_COLUMNS
 
 
 # Setup output paths
@@ -120,11 +113,32 @@ def write_output_csv(csv_name, predictions, OUTPUT_DIR):
     """
     output_csv = OUTPUT_DIR + PREDICTIONS_DIR + csv_name
     print("Predictions saved to: `{}`...".format(output_csv))
-    with open(output_csv, "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(OUTPUT_FIELDNAMES)
-        for i in range(0, len(predictions)):
-            writer.writerow(predictions[i])
+    # Convert predictions array to DataFrame
+    predictions_df = DataFrame(predictions, columns=OUTPUT_FIELDNAMES)
+    # Write DataFrame to CSV
+    predictions_df.to_csv(output_csv, index=False)
+    # Output stats on the predicted dataset
+    input_stats_filename = OUTPUT_DIR + PREDICTIONS_DIR + csv_name + "__stats.txt"
+    write_output_status_percentage(predictions_df, input_stats_filename)
+
+
+def write_output_status_percentage(predictions_df, output_file):
+    """
+    Write text file with percentages of each label value in the test dataset
+    i.e.
+        Summer: xx.xx%
+        Winter: xx.xx%
+        Autumn: xx.xx%
+        Spring: xx.xx%
+    """
+    status_counts = predictions_df[LABEL].value_counts()
+    total_samples = len(predictions_df)
+    status_percentages = status_counts / total_samples * 100
+    with open(output_file, "w") as file:
+        file.write("Test Dataset Label Stats\n")
+        file.write("------------------------\n")
+        for status, percentage in status_percentages.items():
+            file.write(f"{status}: {percentage:.2f}%\n")
 
 
 def write_accuracy_and_loss_plots(
@@ -183,7 +197,10 @@ def plot_confusion_matrix(labels, guesses, outdir):
     cmd = ConfusionMatrixDisplay.from_predictions(labels, guesses)
     # Plot the confusion matrix
     fig, ax = plt.subplots(figsize=(9, 9))
-    cmd.plot(ax=ax)
+    cmd.plot(
+        ax=ax,
+        cmap="viridis",  # "coolwarm", "plasma", "Spectral"
+    )
     # Customize the axis labels
     ax.set_xlabel("Model Output", fontsize=12, fontweight="bold", labelpad=10)
     ax.set_ylabel("Ground Truth Label", fontsize=12, fontweight="bold", labelpad=10)

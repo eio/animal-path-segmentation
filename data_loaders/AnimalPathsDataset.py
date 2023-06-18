@@ -23,12 +23,12 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         """
         # Load, trim, clean, and transform the data
         self.paths_df = self.load_and_transform_data(csv_file)
-        # Group the data into individual animal trajectories
-        # where a trajectory = the full time series per individual
-        # (ordered sequentially by timestamp)
-        self.trajectories = self.paths_df.groupby([IDENTIFIER])
-        # Get the unique group names (i.e. list of unique individuals)
-        self.individual_ids = list(self.trajectories.groups.keys())
+        # Group the data into individual animal trajectories, where:
+        # trajectory = daily positions per individual in one calendar year
+        # (ordered chronologically)
+        self.trajectories = self.paths_df.groupby([ID_YEAR])
+        # Get the unique group names (i.e. list of unique individual+year combinations)
+        self.trajectory_ids = list(self.trajectories.groups.keys())
         # Initialize a dictionary to store tensorized trajectories
         self.tensorized_trajectories = {}
         # Apply the `to_tensor` transformation to all groups in self.trajectories
@@ -41,16 +41,16 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
     def __len__(self):
         """
         Count the number of individual trajectories
-        which corresponds to unique individual IDs
+        (i.e. length of the list of unique individual+year combinations)
         """
-        return len(self.individual_ids)
+        return len(self.trajectory_ids)
 
     def total_records(self):
         """
-        Count the total number of records
-        in the original cleaned dataset
+        Count the total number of waypoints
+        in the post-transformed, post-grouped DataFrame
         """
-        return len(self.paths_df)
+        return self.trajectories.size().sum()
 
     def load_and_transform_data(self, csv_file):
         """
@@ -60,24 +60,51 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         df = pd.read_csv(csv_file)
         # Drop all columns except the ones we care about
         df = df[[IDENTIFIER, STATUS, TIMESTAMP] + FEATURE_COLUMNS]
+        # Add year column
+        df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
+        df[YEAR] = df[TIMESTAMP].dt.year
+        df[ID_YEAR] = df[IDENTIFIER].astype(str) + "-" + df[YEAR].astype(str)
         # Replace 'Fall' with 'Autumn' because OCD
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
-        # Sort by timestamp to ensure sequential order
-        df = df.sort_values(TIMESTAMP)
+        # Sort by ID+Year and Timestamp
+        df = df.sort_values([ID_YEAR, TIMESTAMP])
+        # Only grab the latest position update per day
+        # (i.e. one waypoint per day, per animal)
+        df = self.downsample_to_daily_positions(df)
         return df
 
-    def to_tensor(self, identifier, trajectory):
+    def downsample_to_daily_positions(self, df):
+        """
+        Filter the dataframe to only include
+        the latest position update / waypoint per day
+        """
+        # df[[ID_YEAR, TIMESTAMP]].to_csv("before_downsample.csv", index=False)
+        df = df.groupby(
+            [
+                IDENTIFIER,
+                YEAR,
+                df[TIMESTAMP].dt.date,
+            ]
+        ).last()
+        # df[[ID_YEAR, TIMESTAMP]].to_csv("after_downsample.csv", index=False)
+        return df
+
+    def to_tensor(self, trajectory_id, trajectory):
+        """
+        Convert the provided trajectory's features and labels to tensors
+        """
         features = trajectory[FEATURE_COLUMNS].values
         labels = trajectory[STATUS].values
-        # Convert relevant data to tensors with dtype == torch.float32
+        # Convert relevant data to tensors
         features = torch.from_numpy(features).type(torch.float32)
         # Convert the string labels to one-hot encoded labels
-        num_labels = np.array([SEASON_LABELS[label] for label in labels])
-        label = torch.from_numpy(num_labels).type(torch.float32)
+        encoded_labels = np.array([SEASON_LABELS[label] for label in labels])
+        # Convert encoded labels to tensors
+        encoded_labels = torch.from_numpy(encoded_labels).type(torch.float32)
         return {
-            "id": identifier,
+            "id": trajectory_id,
             "features": features,
-            "labels": label,
+            "labels": encoded_labels,
         }
 
     def __getitem__(self, idx):
@@ -86,13 +113,13 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         """
         if torch.is_tensor(idx):
             row = idx.tolist()
-        # Get the unique individual identifier
-        identifier = self.individual_ids[idx]
-        # Get the full trajectory of time-series data for this individual
-        trajectory = self.tensorized_trajectories[identifier]
-        # Build the sample dictionary, including the animal ID for CSV output
+        # Get the unique trajectory identifier
+        trajectory_id = self.trajectory_ids[idx]
+        # Get the trajectory of downsampled time-series data for this individual+year
+        trajectory = self.tensorized_trajectories[trajectory_id]
+        # Build the sample dictionary, including the individual+year ID for CSV output
         sample = {
-            "id": identifier,
+            "id": trajectory_id,
             "features": trajectory["features"],
             "labels": trajectory["labels"],
         }

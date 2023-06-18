@@ -2,6 +2,7 @@
 __pycache__/
 __archive/
 
+*.csv
 data/*.csv
 
 output/*/*

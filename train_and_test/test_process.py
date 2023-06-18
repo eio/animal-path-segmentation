@@ -121,12 +121,24 @@ def test_process(
             if WRITE_OUTPUT_CSV:
                 # Get the non-normalized features for output in the CSV
                 orig_features = inverse_normalize_features(inputs_tensor)
-                # Build the CSV output rows with predictions and input features
-                rows = make_csv_output_rows(
-                    is_correct, guesses, labels, batch["id"], orig_features
-                )
-                # Store the CSV output row for writing later
-                csv_out_rows += rows
+                # Iterate through the identifier+year ID for this batch
+                # (note: batch["id"] will be an array with one item if batch_size=1)
+                for trajectory_id in batch["id"]:
+                    # Get the trajectory group
+                    trajectory = test_loader.dataset.trajectories.get_group(
+                        trajectory_id
+                    )
+                    # Build the CSV output rows with predictions and input features
+                    rows = make_csv_output_rows(
+                        is_correct,
+                        guesses,
+                        labels,
+                        trajectory_id,
+                        trajectory,
+                        orig_features,
+                    )
+                    # Store the CSV output row for writing later
+                    csv_out_rows += rows
             # If it's the final model evaluation, then
             # keep track of guesses and labels for performance metrics
             if final_test:

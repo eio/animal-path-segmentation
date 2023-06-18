@@ -14,6 +14,7 @@ SEASON_LABELS = {
 N_CATEGORIES = len(SEASON_LABELS)
 # Define strings for column/feature names
 IDENTIFIER = "individual_id"
+ID_YEAR = "identifier-year"
 # Coordinates
 LATITUDE = "lat"  # +1 feature
 LONGITUDE = "lon"  # +1 feature
@@ -30,7 +31,7 @@ DAY = "day"  # +1 feature
 SINTIME = "sin_time"  # +1 feature
 COSTIME = "cos_time"  # +1 feature
 # UNIXTIME = "UnixTime"
-# YEAR = "Year"  #
+YEAR = "Year"
 SPECIES = "species"
 # CONFIDENCE = "confidence"
 # # Stopover flag (binary)
@@ -62,3 +63,14 @@ FEATURE_COLUMNS = (
 )
 # Number of input features: 9
 N_FEATURES = len(FEATURE_COLUMNS)
+# Setup CSV output columns
+CORRECT = "Correct"
+PREDICTED = "Predicted"
+LABEL = "Label"
+OUTPUT_FIELDNAMES = [
+    CORRECT,
+    PREDICTED,
+    LABEL,
+    ID_YEAR,
+    TIMESTAMP,
+] + FEATURE_COLUMNS
