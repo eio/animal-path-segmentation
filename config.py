@@ -33,15 +33,15 @@ class Configurator(object):
         ####################
         ## Training settings
         ####################
-        self.N_EPOCHS = 60
+        self.N_EPOCHS = 100
         self.BATCH_SIZE = 1
         #############################
         ## Evaluation output settings
         #############################
         # Output accuracy/loss plots every {} epochs
-        self.PLOT_EVERY = 60  # epochs
+        self.PLOT_EVERY = 100  # epochs
         # Save an output CSV of predictions every {} epochs
-        self.SAVE_PREDICTIONS_EVERY = 60  # epochs
+        self.SAVE_PREDICTIONS_EVERY = 100  # epochs
         #################
         ## Model settings
         #################
@@ -65,7 +65,7 @@ class Configurator(object):
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.1
+        self.INIT_LEARNING_RATE = 0.01
         self.MOMENTUM = 0.5
         self.WEIGHT_DECAY = 0  # default = 0
         #####################
