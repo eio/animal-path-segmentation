@@ -10,8 +10,8 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../
 from utils.consts import *
 from utils.Normalizer import ScaleValues
 
-# Input: Labeled events data with all features
-INPUT_CSV = "Cranes_all_features.csv"
+# Input: Labeled events data with all features, downsampled to daily position updates
+INPUT_CSV = "Cranes_downsampled.csv"
 # Output: All of the above, but with model inputs normalized
 OUTPUT_CSV = "Cranes_normalized.csv"
 # More outputs from this script
@@ -31,6 +31,7 @@ def normalize():
         DAY: (1, 31),
         SINTIME: (-1, 1),
         COSTIME: (-1, 1),
+        DISTANCE: (df[DISTANCE].min(), df[DISTANCE].max()),
         VELOCITY: (df[VELOCITY].min(), df[VELOCITY].max()),
         BEARING: (0, 360),
         TURN_ANGLE: (-180, 180),

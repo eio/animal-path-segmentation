@@ -31,7 +31,7 @@ DAY = "day"  # +1 feature
 SINTIME = "sin_time"  # +1 feature
 COSTIME = "cos_time"  # +1 feature
 # UNIXTIME = "UnixTime"
-YEAR = "Year"
+YEAR = "year"
 SPECIES = "species"
 # CONFIDENCE = "confidence"
 # # Stopover flag (binary)

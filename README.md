@@ -8,8 +8,9 @@ The expected order of these operations is specified with the numerical prefix in
 
 - `1_add_labels/`
 - `2_add_derived_features/`
-- `3_normalize_data/`
-- `4_split_data/`
+- `3_downsamples_positions/`
+- `4_normalize_data/`
+- `5_split_data/`
 
 NOTE: `__add_environmental_features/` is not integrated into the workflow for now, but would go after `2_add_derived_features/`
 

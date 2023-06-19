@@ -59,34 +59,13 @@ class AnimalPathsDataset(torch.utils.data.Dataset):
         # Load the animal location data
         df = pd.read_csv(csv_file)
         # Drop all columns except the ones we care about
-        df = df[[IDENTIFIER, STATUS, TIMESTAMP, YEAR] + FEATURE_COLUMNS]
-        # Add ID_YEAR column to serve as a trajectory ID
-        df[ID_YEAR] = df[IDENTIFIER].astype(str) + "-" + df[YEAR].astype(str)
+        df = df[[IDENTIFIER, STATUS, TIMESTAMP, ID_YEAR] + FEATURE_COLUMNS]
         # Replace 'Fall' with 'Autumn' because OCD
         df[STATUS] = df[STATUS].replace("Fall", "Autumn")
         # Convert TIMESTAMP column to datetime type
         df[TIMESTAMP] = pd.to_datetime(df[TIMESTAMP])
-        # Sort by ID+Year and Timestamp
+        # Sort by ID+Year (i.e. trajectory ID) and Timestamp to order chronologically
         df = df.sort_values([ID_YEAR, TIMESTAMP])
-        # Only grab the latest position update per day
-        # (i.e. one waypoint per day, per animal)
-        df = self.downsample_to_daily_positions(df)
-        return df
-
-    def downsample_to_daily_positions(self, df):
-        """
-        Filter the dataframe to only include
-        the latest position update / waypoint per day
-        """
-        # df[[ID_YEAR, TIMESTAMP]].to_csv("before_downsample.csv", index=False)
-        df = df.groupby(
-            [
-                IDENTIFIER,
-                YEAR,
-                df[TIMESTAMP].dt.date,
-            ]
-        ).last()
-        # df[[ID_YEAR, TIMESTAMP]].to_csv("after_downsample.csv", index=False)
         return df
 
     def to_tensor(self, trajectory_id, trajectory):

@@ -96,12 +96,13 @@ def inverse_normalize_features(features_tensor):
         norm_config = json.load(f)
     # Apply inverse normalization to each column
     for column, (min_val, max_val) in norm_config.items():
-        # print("Inverse scaling column: `{}`...".format(column))
-        scaler = ScaleValues(max_range=max_val, min_range=min_val)
-        # Apply inverse normalization and save only scalar value (.item()) from tensor
-        df[column] = df[column].apply(
-            lambda x: scaler.inverse_normalize(torch.tensor(x)).item()
-        )
+        # Check if the column is present in the DataFrame
+        if column in df.columns:
+            scaler = ScaleValues(max_range=max_val, min_range=min_val)
+            # Apply inverse normalization and save only scalar value (.item()) from tensor
+            df[column] = df[column].apply(
+                lambda x: scaler.inverse_normalize(torch.tensor(x)).item()
+            )
     return df.values.tolist()
 
 

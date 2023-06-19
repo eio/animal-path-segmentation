@@ -22,11 +22,11 @@ if __name__ == "__main__":
     df = df[
         [
             IDENTIFIER,
+            TIMESTAMP,
+            STATUS,
+            SPECIES,
             LATITUDE,
             LONGITUDE,
-            TIMESTAMP,
-            SPECIES,
-            STATUS,
         ]
     ]
     # Drop rows with missing data
