@@ -2,7 +2,7 @@
 
 ## Preprocessing
 
-The `preprocessing/` directory contains scripts to add training labels, derive additional features, normalize, and split the data into training and test datasets.
+The `preprocessing/` directory contains scripts to add training labels, derive additional features, downsample to daily positions, normalize, and split the data into training, validation, and test datasets.
 
 The expected order of these operations is specified with the numerical prefix in subdirectory names:
 
@@ -11,6 +11,12 @@ The expected order of these operations is specified with the numerical prefix in
 - `3_downsamples_positions/`
 - `4_normalize_data/`
 - `5_split_data/`
+
+Before running `1_add_labels/add_labels_to_events.py`, the events data (`crane_events_20220223.csv`) and the label data (`segmentations/*.csv`) should be added to the `1_add_labels/` directory.
+
+The output of each step in the process is the input for the next step, finishing with `5_split_data/` which produces the `train.csv`, `validation.csv`, and `test.csv` output files.
+
+Once produced, the final output files should be moved to the top-level `data/` directory.
 
 NOTE: `__add_environmental_features/` is not integrated into the workflow for now, but would go after `2_add_derived_features/`
 
