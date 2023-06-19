@@ -4,6 +4,7 @@ __archive/
 
 *.csv
 data/*.csv
+data/details/histograms/*.png
 
 output/*/*
 
