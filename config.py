@@ -2,6 +2,10 @@ import torch
 
 # Local scripts
 from utils.consts import (
+    RNN,
+    LSTM,
+    SGD,
+    ADAM,
     N_FEATURES,
     N_CATEGORIES,
     SAVED_MODEL_DIR,
@@ -21,10 +25,10 @@ class Configurator(object):
         ####################################
         ## Details defined in `run_model.py`
         ####################################
-        self.MODEL = "RNN"
-        # self.MODEL = "LSTM"
-        self.OPTIMIZER = "SGD"
-        # self.OPTIMIZER = "ADAM"
+        self.MODEL = RNN
+        # self.MODEL = LSTM
+        self.OPTIMIZER = SGD
+        # self.OPTIMIZER = ADAM
         #################
         ## Print settings
         #################
@@ -33,7 +37,7 @@ class Configurator(object):
         ####################
         ## Training settings
         ####################
-        self.N_EPOCHS = 100
+        self.N_EPOCHS = 80
         self.BATCH_SIZE = 1
         #############################
         ## Evaluation output settings
@@ -65,7 +69,7 @@ class Configurator(object):
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.01
+        self.INIT_LEARNING_RATE = 0.001
         self.MOMENTUM = 0.5
         self.WEIGHT_DECAY = 0  # default = 0
         #####################

@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
 # Local scripts
 from utils.misc import color
 from utils.consts import (
+    SGD,
     LABEL,
     OUTPUT_FIELDNAMES,
     SEASON_LABELS,
@@ -98,12 +99,15 @@ def write_config_json(cfg):
             "NUM_LAYERS": cfg.NUM_LAYERS,
             "DROPOUT": cfg.DROPOUT,
             "INIT_LEARNING_RATE": cfg.INIT_LEARNING_RATE,
-            "SGD_MOMENTUM": cfg.MOMENTUM,
-            "SGD_WEIGHT_DECAY": cfg.WEIGHT_DECAY,
             "LR_PATIENCE": cfg.LR_PATIENCE,
             "LR_FACTOR": cfg.LR_FACTOR,
             "LR_MIN": cfg.LR_MIN,
         }
+        # Only save SGD-specific hyperparameters
+        # if the SGD optimizer is being used
+        if cfg.OPTIMIZER == SGD:
+            output["SGD_MOMENTUM"] = cfg.MOMENTUM
+            output["SGD_WEIGHT_DECAY"] = cfg.WEIGHT_DECAY
         json.dump(output, jsonfile, indent=4)
 
 

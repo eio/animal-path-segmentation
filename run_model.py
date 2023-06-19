@@ -9,7 +9,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 # Local scripts
 from config import Configurator
-from utils.consts import N_FEATURES, N_CATEGORIES
+from utils.consts import N_FEATURES, N_CATEGORIES, RNN, LSTM, SGD, ADAM
 from utils.misc import start_script, finish_script, get_runtime
 from train_and_test.train_process import train_process
 from train_and_test.test_process import test_process
@@ -29,18 +29,31 @@ class Model(nn.Module):
     Create the model
     """
 
-    def __init__(self, input_size, hidden_size, output_size, num_layers, dropout):
+    def __init__(
+        self, model_name, input_size, hidden_size, output_size, num_layers, dropout
+    ):
         super(Model, self).__init__()
         self.hidden_size = hidden_size
-        self.model = nn.RNN(
-            input_size,
-            hidden_size,
-            num_layers=num_layers,
-            dropout=dropout,
-            batch_first=True,
-        )
-        ### TODO: compare RNN and LSTM
-        # self.model = nn.LSTM(input_size, hidden_size, num_layers=num_layers, dropout=dropout, batch_first=True,)
+        if model_name == RNN:
+            self.model = nn.RNN(
+                input_size,
+                hidden_size,
+                num_layers=num_layers,
+                dropout=dropout,
+                batch_first=True,
+            )
+        elif model_name == LSTM:
+            self.model = nn.LSTM(
+                input_size,
+                hidden_size,
+                num_layers=num_layers,
+                dropout=dropout,
+                batch_first=True,
+            )
+        else:
+            raise Exception(
+                "Please provide a valid model architecture name in `config.py`."
+            )
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x, lengths):
@@ -68,16 +81,23 @@ def Optimizer(model, cfg):
     """
     Create the optimizer
     """
-    return optim.SGD(
-        model.parameters(),
-        lr=cfg.INIT_LEARNING_RATE,
-        momentum=cfg.MOMENTUM,
-        weight_decay=cfg.WEIGHT_DECAY,
-    )
-    # return optim.Adam(
-    #     model.parameters(),
-    #     lr=cfg.INIT_LEARNING_RATE,
-    # )
+    if cfg.OPTIMIZER == SGD:
+        return optim.SGD(
+            model.parameters(),
+            lr=cfg.INIT_LEARNING_RATE,
+            momentum=cfg.MOMENTUM,
+            weight_decay=cfg.WEIGHT_DECAY,
+        )
+    elif cfg.OPTIMIZER == ADAM:
+        return optim.Adam(
+            model.parameters(),
+            lr=cfg.INIT_LEARNING_RATE,
+            # betas=(0.9, 0.999),
+            # eps=1e-08,
+            # weight_decay=0,
+        )
+    else:
+        raise Exception("Please provide a valid optimizer name in `config.py`.")
 
 
 def Scheduler(optimizer, cfg):
@@ -113,6 +133,7 @@ def main(LOAD_SAVED_MODEL=False):
     # Define the model
     # and send to GPU device (if CUDA-compatible)
     model = Model(
+        cfg.MODEL,
         cfg.INPUT_SIZE,
         cfg.HIDDEN_SIZE,
         cfg.OUTPUT_SIZE,

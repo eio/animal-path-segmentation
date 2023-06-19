@@ -1,3 +1,9 @@
+# Model names
+RNN = "RNN"
+LSTM = "LSTM"
+# Optimizer names
+SGD = "SGD"
+ADAM = "ADAM"
 # Output directory names
 SAVED_MODEL_DIR = "saved_model/"
 PERFORMANCE_DIR = "performance/"
