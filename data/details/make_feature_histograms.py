@@ -12,6 +12,14 @@ from utils.consts import *
 # Load the processed data
 df = pd.read_csv("Cranes_downsampled.csv")
 
+# Define color mappings for each status value
+color_mappings = {
+    "Winter": "lightblue",
+    "Fall": "darkorange",
+    "Spring": "green",
+    "Summer": "gold",
+}
+
 # Create a figure
 # which we clear after each iteration
 plt.figure()
@@ -28,6 +36,7 @@ for feature in FEATURE_COLUMNS:
             data=subset,
             label=label,
             kde=True,  # show Kernel Density Estimate (KDE) line too
+            color=color_mappings[status_value],
         )
         # Set the title and labels for the plot
         plt.title("`{}` values when {}".format(feature, label))
