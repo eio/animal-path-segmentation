@@ -27,8 +27,8 @@ class Configurator(object):
         ####################################
         self.MODEL = RNN
         # self.MODEL = LSTM
-        self.OPTIMIZER = SGD
-        # self.OPTIMIZER = ADAM
+        # self.OPTIMIZER = SGD
+        self.OPTIMIZER = ADAM
         #################
         ## Print settings
         #################
@@ -62,7 +62,7 @@ class Configurator(object):
         self.NUM_LAYERS = 2  # default = 1
         # The recommended values for dropout probability are
         # between 0.1 and 0.5, depending on the task and model size
-        self.DROPOUT = 0.1  # default = 0
+        self.DROPOUT = 0.2  # default = 0
         # Guideline: if the model has less than tens-of-thousands of trainable parameters,
         # regularization may not be needed. For an RNN:
         # trainable_params = ((input_size + hidden_size) * hidden_size + hidden_size) * num_layers
@@ -70,8 +70,8 @@ class Configurator(object):
         ## Optimizer settings
         #####################
         self.INIT_LEARNING_RATE = 0.001
-        self.MOMENTUM = 0.5
-        self.WEIGHT_DECAY = 0  # default = 0
+        self.MOMENTUM = 0.5  # SGD only
+        self.WEIGHT_DECAY = 0  # SGD or ADAM
         #####################
         ## Scheduler settings
         #####################

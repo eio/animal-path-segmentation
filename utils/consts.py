@@ -27,6 +27,12 @@ LONGITUDE = "lon"  # +1 feature
 # Original time column
 TIMESTAMP = "timestamp"
 # Derived movement features
+# Intra-day features
+MEAN_DISTANCE = "daily_mean_distance"
+MEAN_VELOCITY = "daily_mean_velocity"
+MEAN_BEARING = "daily_mean_bearing"
+MEAN_TURN_ANGLE = "daily_mean_turn_angle"
+# Inter-day (daily downsampled) features
 DISTANCE = "dist_from_prev_loc"
 VELOCITY = "velocity"
 BEARING = "bearing"
@@ -54,6 +60,13 @@ TIME_FEATURES = [
 ]
 # Group derived movement features
 MOVEMENT_FEATURES = [
+    # Intra-day daily averages
+    MEAN_DISTANCE,
+    MEAN_VELOCITY,
+    MEAN_BEARING,
+    MEAN_TURN_ANGLE,
+    # Inter-day values (day-to-day)
+    DISTANCE,
     VELOCITY,
     BEARING,
     TURN_ANGLE,
@@ -67,7 +80,7 @@ FEATURE_COLUMNS = (
     + TIME_FEATURES
     + MOVEMENT_FEATURES
 )
-# Number of input features: 9
+# Number of input features: 14
 N_FEATURES = len(FEATURE_COLUMNS)
 # Setup CSV output columns
 CORRECT = "Correct"

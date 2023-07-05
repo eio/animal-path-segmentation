@@ -10,7 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../
 from utils.consts import *
 
 # Load the processed data
-df = pd.read_csv("Cranes_downsampled.csv")
+df = pd.read_csv("Cranes_downsampled_all_features.csv")
 
 # Define color mappings for each status value
 color_mappings = {

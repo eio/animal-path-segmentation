@@ -12,6 +12,16 @@ from utils.consts import *
 EARTH_RADIUS = 6371 * 1000  # meters
 
 
+def derive_movement_features(df):
+    # Group by individual trajectories
+    trajectories = df.groupby([IDENTIFIER])
+    # Calculate velocity, bearing, and turn angle across all waypoints for each trajectory
+    df = trajectories.apply(calculate_velocity_bearing_turn).reset_index(
+        drop=True  # reset index to obtain a new DataFrame with same shape as original one
+    )
+    return df
+
+
 def calculate_velocity_bearing_turn(df):
     # Ensure the index of the DataFrame is sequential after grouping
     df = df.reset_index(drop=True)
@@ -26,7 +36,7 @@ def calculate_velocity_bearing_turn(df):
     velocity = calculate_velocity(dist, time_diff)  # meters/second
     bearing = calculate_bearing(lat_rad, lon_rad)
     turn_angle = calculate_turn_angle(bearing)
-    # Add df columns for: distance, velocity, bearing, and turn angle
+    # Add (or update) df columns:
     df[DISTANCE] = dist
     df[VELOCITY] = velocity
     df[BEARING] = bearing
@@ -77,7 +87,12 @@ def calculate_velocity(dist, dt):
 
 def calculate_bearing(lat_rad, lon_rad):
     """
-    Calculate bearing for each trajectory waypoint
+    Calculate bearing for each trajectory waypoint.
+    Args:
+        lat_rad (numpy.ndarray): Array of latitude values in radians.
+        lon_rad (numpy.ndarray): Array of longitude values in radians.
+    Returns:
+        numpy.ndarray: Array of bearing values in the range of -180 to 180 degrees.
     """
     # Pad with last value to ensure shapes match
     lon_diff = np.diff(np.concatenate([lon_rad, [lon_rad.iloc[-1]]]))
@@ -87,13 +102,25 @@ def calculate_bearing(lat_rad, lon_rad):
         np.cos(lat_rad) * np.sin(lat_rad) * np.cos(lon_rad - lon_rad.iloc[0])
     )
     bearing = np.degrees(np.arctan2(x, y)) % 360
+    # Convert bearing values in the range of 0 to 360 to -180 to 180
+    bearing[bearing > 180] -= 360
     return bearing
 
 
 def calculate_turn_angle(bearing):
     """
-    Calculate turning angle for each trajectory waypoint
+    Calculate the turning angle for each trajectory waypoint.
+    Args:
+        bearing (numpy.ndarray): Array of bearing values in the range of -180 to 180 degrees.
+    Returns:
+        numpy.ndarray: Array of turn angles corresponding to each waypoint.
+    Raises:
+        ValueError: If the input bearing values are outside the valid range.
     """
+    if not np.all((-180 <= bearing) & (bearing <= 180)):
+        raise ValueError(
+            "Bearing values should be in the range of -180 to 180 degrees."
+        )
     turn_angle = np.degrees(
         np.arctan2(
             np.sin(np.radians(bearing - np.roll(bearing, 1))),

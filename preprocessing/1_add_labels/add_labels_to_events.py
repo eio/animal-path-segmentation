@@ -258,7 +258,7 @@ if __name__ == "__main__":
     df = add_status_label_to_events(df_events, grouped_labels)
 
     # Output the data in CSV format
-    outfile = CSV_OUT + "PROCESSED_OUTPUT.csv"
+    outfile = CSV_OUT + "Cranes_labeled.csv"
     print("Saving processed data to `{}`...".format(outfile))
     df.to_csv(outfile, index=False)
 

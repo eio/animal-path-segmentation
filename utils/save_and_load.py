@@ -102,12 +102,12 @@ def write_config_json(cfg):
             "LR_PATIENCE": cfg.LR_PATIENCE,
             "LR_FACTOR": cfg.LR_FACTOR,
             "LR_MIN": cfg.LR_MIN,
+            "WEIGHT_DECAY": cfg.WEIGHT_DECAY,
         }
         # Only save SGD-specific hyperparameters
         # if the SGD optimizer is being used
         if cfg.OPTIMIZER == SGD:
             output["SGD_MOMENTUM"] = cfg.MOMENTUM
-            output["SGD_WEIGHT_DECAY"] = cfg.WEIGHT_DECAY
         json.dump(output, jsonfile, indent=4)
 
 

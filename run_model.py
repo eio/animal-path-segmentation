@@ -51,9 +51,7 @@ class Model(nn.Module):
                 batch_first=True,
             )
         else:
-            raise Exception(
-                "Please provide a valid model architecture name in `config.py`."
-            )
+            raise Exception("Please provide a valid model architecture name.")
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x, lengths):
@@ -92,12 +90,12 @@ def Optimizer(model, cfg):
         return optim.Adam(
             model.parameters(),
             lr=cfg.INIT_LEARNING_RATE,
+            weight_decay=cfg.WEIGHT_DECAY,
             # betas=(0.9, 0.999),
             # eps=1e-08,
-            # weight_decay=0,
         )
     else:
-        raise Exception("Please provide a valid optimizer name in `config.py`.")
+        raise Exception("Please provide a valid optimizer name.")
 
 
 def Scheduler(optimizer, cfg):
