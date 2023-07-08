@@ -51,7 +51,7 @@ def load_events_data():
             "individual_id",
             # "taxon_canonical_name",
             "species",  # seems to be a dupe of taxon field
-            "bearing",  # TODO: decide if this is valid after downsampling
+            # "bearing",  # recalculated later
         ]
     ]
     # Clean up data we can't use (safety check)

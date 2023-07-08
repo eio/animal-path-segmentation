@@ -13,13 +13,13 @@ UNIQUE_ID = None
 
 if DOWNSAMPLED == True:
     # Get stats on daily downsampled positions
-    df = pd.read_csv("Cranes_downsampled.csv")
+    df = pd.read_csv("Cranes_downsampled_all_features.csv")
     # Add ID_YEAR column to serve as a trajectory ID
     df[ID_YEAR] = df[IDENTIFIER].astype(str) + "-" + df[YEAR].astype(str)
     UNIQUE_ID = ID_YEAR
 else:
     # Get stats on all original waypoints
-    df = pd.read_csv("cranes_events_labeled.csv")
+    df = pd.read_csv("Cranes_labeled.csv")
     UNIQUE_ID = IDENTIFIER
 
 # Determine the unique sequence IDs
