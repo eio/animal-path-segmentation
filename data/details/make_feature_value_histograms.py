@@ -32,6 +32,7 @@ for feature in FEATURE_COLUMNS:
         subset = df[df[STATUS] == status_value][feature]
         # Plot the histogram for the current STATUS value
         label = "STATUS=" + str(status_value)
+        plt.yscale("log")  # Add this line for a logarithmic y-axis scale
         sns.histplot(
             data=subset,
             label=label,

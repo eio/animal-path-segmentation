@@ -71,3 +71,5 @@ All generated output files can be found in `output/{UNIQUE_PARAMS_STRING}/`
 Miscellaneous utility functions (e.g. time and data transformations) are stored in `utils/misc.py`
 
 Widely-used constants, normalization code, and normalization config JSON are also stored in `utils/`
+
+Additional tools for investigating, visualizing, and reporting on results are stored in `tools/`
