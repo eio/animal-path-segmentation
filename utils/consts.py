@@ -1,14 +1,24 @@
-# Model names
-RNN = "RNN"
-LSTM = "LSTM"
-# Optimizer names
-SGD = "SGD"
-ADAM = "ADAM"
 # Output directory names
 SAVED_MODEL_DIR = "saved_model/"
 PERFORMANCE_DIR = "performance/"
 PREDICTIONS_DIR = "predictions/"
 EPOCHS_PREDICTIONS_DIR = PREDICTIONS_DIR + "epochs/"
+# Model names
+RNN = "RNN"
+LSTM = "LSTM"
+GRU = "GRU"
+# Optimizer names
+SGD = "SGD"
+ADAM = "ADAM"
+# Config fields
+MODEL_TYPE = "MODEL_TYPE"
+OPTIMIZER = "OPTIMIZER"
+LEARNING_RATE = "LEARNING_RATE"
+DROPOUT = "DROPOUT"
+HIDDEN_SIZE = "HIDDEN_SIZE"
+NUM_LAYERS = "NUM_LAYERS"
+NUM_EPOCHS = "NUM_EPOCHS"
+BATCH_SIZE = "BATCH_SIZE"
 # One-hot encoding for seasonal labels
 SEASON_LABELS = {
     "Winter": [1, 0, 0, 0],

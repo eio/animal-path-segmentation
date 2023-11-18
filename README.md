@@ -21,7 +21,7 @@ NOTE: `__add_environmental_features/` is not integrated into the workflow for no
 
 ## Training
 
-	py run_model.py
+	py main.py
 
 Training the model consists of:
 - showing it examples
@@ -39,7 +39,7 @@ The testing process logic is in `train_and_test/test_process.py`
 
 ## Testing with a trained model
 
-	py run_model.py -l
+	py main.py -l
 
 Adding the `-l` (or `--load`) flag will load the saved model + optimizer state from `output/saved_model/model+optimizer.pth`
 

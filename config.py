@@ -1,19 +1,21 @@
 import torch
 
 # Local scripts
-from utils.consts import (
-    RNN,
-    LSTM,
-    SGD,
-    ADAM,
-    N_FEATURES,
-    N_CATEGORIES,
-    SAVED_MODEL_DIR,
-    PERFORMANCE_DIR,
-    PREDICTIONS_DIR,
-    EPOCHS_PREDICTIONS_DIR,
-)
+from utils.consts import *
 from utils.save_and_load import write_config_json, make_directory
+
+# Hyperparameters to be applied IF running `main.py`
+# (i.e. this is ignored if running `grid_search.py`)
+DEFAULT_HYPERPARAMS = {
+    MODEL_TYPE: GRU,  # RNN, LSTM, GRU
+    OPTIMIZER: ADAM,  # ADAM, SGD
+    HIDDEN_SIZE: 16,  # 32, 64, 128, 256, ...
+    NUM_LAYERS: 2,  # 3, 4, ...
+    LEARNING_RATE: 0.01,  # 0.001, 0.0001
+    DROPOUT: 0.1,  # 0.1 to 0.5
+    NUM_EPOCHS: 1,
+    BATCH_SIZE: 1,
+}
 
 
 class Configurator(object):
@@ -21,14 +23,12 @@ class Configurator(object):
     Initialize PyTorch settings and hyperparameters
     """
 
-    def __init__(self):
+    def __init__(self, cfg=DEFAULT_HYPERPARAMS):
         ####################################
         ## Details defined in `run_model.py`
         ####################################
-        self.MODEL = RNN
-        # self.MODEL = LSTM
-        # self.OPTIMIZER = SGD
-        self.OPTIMIZER = ADAM
+        self.MODEL = cfg[MODEL_TYPE]
+        self.OPTIMIZER = cfg[OPTIMIZER]
         #################
         ## Print settings
         #################
@@ -37,8 +37,8 @@ class Configurator(object):
         ####################
         ## Training settings
         ####################
-        self.N_EPOCHS = 80
-        self.BATCH_SIZE = 1
+        self.N_EPOCHS = cfg[NUM_EPOCHS]
+        self.BATCH_SIZE = cfg[BATCH_SIZE]
         #############################
         ## Evaluation output settings
         #############################
@@ -53,25 +53,22 @@ class Configurator(object):
         self.INPUT_SIZE = N_FEATURES
         # `hidden_size` controls the width of each RNN layer
         # (i.e., the number of neurons in each layer)
-        self.HIDDEN_SIZE = 32
-        # `output_size` is the number of possible categories:
-        # len(["Winter", "Spring", "Summer", "Autumn"])
-        self.OUTPUT_SIZE = N_CATEGORIES
+        self.HIDDEN_SIZE = cfg[HIDDEN_SIZE]
         # `num_layers` controls the depth of the RNN
         # (i.e., the number of stacked RNN layers)
-        self.NUM_LAYERS = 2  # default = 1
+        self.NUM_LAYERS = cfg[NUM_LAYERS]  # default = 1
         # The recommended values for dropout probability are
         # between 0.1 and 0.5, depending on the task and model size
-        self.DROPOUT = 0.2  # default = 0
+        self.DROPOUT = cfg[DROPOUT]  # default = 0
         # Guideline: if the model has less than tens-of-thousands of trainable parameters,
         # regularization may not be needed. For an RNN:
         # trainable_params = ((input_size + hidden_size) * hidden_size + hidden_size) * num_layers
         #####################
         ## Optimizer settings
         #####################
-        self.INIT_LEARNING_RATE = 0.001
+        self.INIT_LEARNING_RATE = cfg[LEARNING_RATE]
         self.MOMENTUM = 0.5  # SGD only
-        self.WEIGHT_DECAY = 0  # SGD or ADAM
+        self.WEIGHT_DECAY = 0.001  # SGD or ADAM
         #####################
         ## Scheduler settings
         #####################
