@@ -3,8 +3,10 @@ import glob
 import pandas as pd
 
 # Data filepaths
-CRANE_EVENTS = "crane_events_20220223.csv"
-SEGMENTATIONS = "segmentations/"
+DATA_DIR = "../../data/raw_inputs/"
+# Data filepaths
+CRANE_EVENTS = DATA_DIR + "crane_events_20220223.csv"
+SEGMENTATIONS = DATA_DIR + "segmentations/"
 CSV_OUT = "output/"
 
 

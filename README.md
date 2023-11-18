@@ -11,17 +11,22 @@ The expected order of these operations is specified with the numerical prefix in
 - `3_normalize_data/`
 - `4_split_data/`
 
-Before running `1_add_labels/add_labels_to_events.py`, the events data (`crane_events_20220223.csv`) and the label data (`segmentations/*.csv`) should be added to the `1_add_labels/` directory.
+They can be run in sequence with:
 
-The output of each step in the process is the input for the next step, finishing with `4_split_data/` which produces the `train.csv`, `validation.csv`, and `test.csv` output files.
+	cd preprocessing/
+	python run_all_preproc.py
 
-Once produced, the final output files should be moved to the top-level `data/` directory.
+Before running this, the events data `crane_events_20220223.csv` and the labels data `segmentations/*.csv` should be added to the `data/raw_inputs/` directory.
+
+The output of each step in the process is the input for the next step, finishing with `4_split_data/` which produces the `train.csv`, `validation.csv`, and `test.csv` files in `4_split_data/output`.
+
+Once produced, the final split output files should be moved to the top-level `data/` directory.
 
 NOTE: `__add_environmental_features/` is not integrated into the workflow for now, but would go after `2_add_derived_features/`
 
 ## Training
 
-	py main.py
+	python main.py
 
 Training the model consists of:
 - showing it examples
@@ -39,7 +44,7 @@ The testing process logic is in `train_and_test/test_process.py`
 
 ## Testing with a trained model
 
-	py main.py -l
+	python main.py -l
 
 Adding the `-l` (or `--load`) flag will load the saved model + optimizer state from `output/saved_model/model+optimizer.pth`
 

@@ -1,3 +1,4 @@
+import shutil
 import pandas as pd
 import os, sys
 
@@ -14,6 +15,7 @@ from intra_day_features import *
 INPUT_CSV = "Cranes_labeled.csv"
 # Output: All of the above + derived time & movement features
 OUTPUT_CSV = "Cranes_downsampled_all_features.csv"
+OUTPUT_PATH = "output/" + OUTPUT_CSV
 
 
 def downsample_to_daily_positions(df):
@@ -85,5 +87,12 @@ if __name__ == "__main__":
     df = df[df[BEARING].notna()]
     df = df[df[TURN_ANGLE].notna()]
     # Save the dataframe to a CSV file
-    df.to_csv(OUTPUT_CSV, index=False)
-    print("CSV with derived feature columns saved to: `{}`".format(OUTPUT_CSV))
+    df.to_csv(OUTPUT_PATH, index=False)
+    print("CSV with derived feature columns saved to: `{}`".format(OUTPUT_PATH))
+
+    # Use shutil.copy to copy the file to the final destination
+    destination_file = os.path.join("../3_normalize_data/" + OUTPUT_CSV)
+    shutil.copy(OUTPUT_PATH, destination_file)
+    # Print a message to confirm the copy operation
+    print(f"Copied `{OUTPUT_PATH}` to `{destination_file}`")
+    print("Done.\n")

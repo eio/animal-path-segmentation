@@ -1,3 +1,4 @@
+import shutil
 import json
 import torch
 import pandas as pd
@@ -14,8 +15,10 @@ from utils.Normalizer import ScaleValues
 INPUT_CSV = "Cranes_downsampled_all_features.csv"
 # Output: All of the above, but with model inputs normalized
 OUTPUT_CSV = "Cranes_normalized.csv"
+OUTPUT_PATH = "output/" + OUTPUT_CSV
 # More outputs from this script
-NORMS_OUT = "norms.json"
+NORMS_JSON = "norms.json"
+NORMS_OUT_PATH = "output/" + NORMS_JSON
 INVERSE_CSV_OUT = "Cranes_normalized_Inverse.csv"
 
 
@@ -23,8 +26,8 @@ def normalize():
     # Load the input dataframe
     df = pd.read_csv(INPUT_CSV)
 
-    # Define the min and max ranges for each column
-    ranges: dict[str, any] = {
+    # Define the min and max parameter ranges for each column
+    param_ranges: dict[str, any] = {
         LATITUDE: (-90, 90),
         LONGITUDE: (-180, 180),
         MONTH: (1, 12),
@@ -44,21 +47,24 @@ def normalize():
     }
 
     # Apply scaling to each column
-    for column, (min_val, max_val) in ranges.items():
+    for column, (min_val, max_val) in param_ranges.items():
         print("Scaling column: `{}`...".format(column))
         scaler = ScaleValues(max_range=max_val, min_range=min_val)
         # Apply normalization and save only scalar value (.item()) from tensor
         df[column] = df[column].apply(lambda x: scaler(torch.tensor(x)).item())
 
-    # Save the normalization scalars to a JSON file
-    with open(NORMS_OUT, "w") as f:
-        json.dump(ranges, f)
-    print("Saved norms config to: `{}`".format(NORMS_OUT))
+    # Save the normalization parameters to a JSON file
+    with open(NORMS_OUT_PATH, "w") as f:
+        json.dump(param_ranges, f)
+    print("Saved scaling params to: `{}`".format(NORMS_OUT_PATH))
 
-    # Save the normalized dataframe
-    print("Saving normalized data...")
-    df = df.to_csv(OUTPUT_CSV, index=False)
-    print("Saved normalized data to: `{}`\n".format(OUTPUT_CSV))
+    # Use shutil.copy to copy the file to the final destination
+    STORED_NORMS = f"utils/{NORMS_JSON}"
+    destination_file = os.path.join(sys.path[-1], STORED_NORMS)
+    shutil.copy(NORMS_OUT_PATH, destination_file)
+    # Print a message to confirm the copy operation
+    print(f"Copied `{NORMS_OUT_PATH}` to `{STORED_NORMS}`")
+    return df
 
 
 def inverse_normalize():
@@ -85,5 +91,16 @@ def inverse_normalize():
 
 
 if __name__ == "__main__":
-    normalize()
+    # Normalize the data
+    df = normalize()
     # inverse_normalize()
+    # Save the normalized dataframe
+    print("Saving normalized dataset...")
+    df.to_csv(OUTPUT_PATH, index=False)
+    print("Saved normalized data to: `{}`\n".format(OUTPUT_PATH))
+    # Use shutil.copy to copy the file to the final destination
+    destination_file = os.path.join("../4_split_data/" + OUTPUT_CSV)
+    shutil.copy(OUTPUT_PATH, destination_file)
+    # Print a message to confirm the copy operation
+    print(f"Copied `{OUTPUT_PATH}` to `{destination_file}`")
+    print("Done.")

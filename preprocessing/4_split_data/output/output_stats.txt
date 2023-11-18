@@ -1,0 +1,34 @@
+Train ratio: 80%
+Test ratio: 10%
+Validation ratio: 10%
+
+Total Individual Trajectories: 12
+Species: Grus grus                     	Trajectories: 5    	Ratio: 41.67%
+Species: Grus nigricollis              	Trajectories: 6    	Ratio: 50.00%
+Species: Grus vipio                    	Trajectories: 1    	Ratio: 8.33%
+
+-------------------------
+Train dataset:
+Waypoints: 1607
+Trajectories: 12
+Species distribution:
+                  Waypoints  Trajectories
+Grus nigricollis       1135             6
+Grus grus               419             5
+Grus vipio               53             1
+
+-------------------------
+Validation dataset:
+Waypoints: 372
+Trajectories: 2
+Species distribution:
+                  Waypoints  Trajectories
+Grus nigricollis        372             2
+
+-------------------------
+Test dataset:
+Waypoints: 383
+Trajectories: 2
+Species distribution:
+                  Waypoints  Trajectories
+Grus nigricollis        383             2

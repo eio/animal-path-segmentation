@@ -11,10 +11,11 @@ from utils.consts import *
 # Input: Labeled events data with normalized features
 INPUT_CSV = "Cranes_normalized.csv"
 # Outputs:
-TRAIN_CSV = "train.csv"
-TEST_CSV = "test.csv"
-VALIDATION_CSV = "validation.csv"
-OUTPUT_STATS = "output_stats.txt"
+OUT_DIR = "output/"
+TRAIN_CSV = OUT_DIR + "train.csv"
+TEST_CSV = OUT_DIR + "test.csv"
+VALIDATION_CSV = OUT_DIR + "validation.csv"
+OUTPUT_STATS = OUT_DIR + "output_stats.txt"
 # Default ratio values
 DEFAULT_TRAIN_RATIO = 80
 DEFAULT_VALIDATION_RATIO = 10
@@ -160,6 +161,7 @@ def main(df, train_ratio, validation_ratio, test_ratio):
     print("\t" + TRAIN_CSV)
     print("\t" + VALIDATION_CSV)
     print("\t" + TEST_CSV)
+    print("Remember to manually move these CSVs to the top-level `data/` directory.\n")
     print("Finito.\n")
 
 

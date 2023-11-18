@@ -1,3 +1,4 @@
+import shutil
 import pandas as pd
 from tqdm.auto import tqdm
 
@@ -6,6 +7,14 @@ from utils import *
 
 # Initialize progress bar for Dataframe actions
 tqdm.pandas()
+
+# Data filepaths
+DATA_DIR = "../../data/raw/"
+# Define output names
+CSV_OUT = "output/"
+CROPPED_FILE = CSV_OUT + "Cranes.csv"
+LABEL_FILENAME = "Cranes_labeled.csv"
+OUTPUT_FILE = CSV_OUT + LABEL_FILENAME
 
 
 def build_confidence_column(df):
@@ -228,8 +237,6 @@ def add_status_label_to_events(df_events, grouped_labels):
 
 
 if __name__ == "__main__":
-    print()
-
     # Load the locally stored CSV - Labels data
     df_labels = load_labels_data()
     # Replace "Presumed" `Status` values with binary integer `Confidence` column
@@ -258,8 +265,13 @@ if __name__ == "__main__":
     df = add_status_label_to_events(df_events, grouped_labels)
 
     # Output the data in CSV format
-    outfile = CSV_OUT + "Cranes_labeled.csv"
-    print("Saving processed data to `{}`...".format(outfile))
-    df.to_csv(outfile, index=False)
+    print("Saving labeled data to `{}`...".format(OUTPUT_FILE))
+    df.to_csv(OUTPUT_FILE, index=False)
+
+    # Use shutil.copy to copy the file to the final destination
+    destination_file = os.path.join("../2_add_derived_features/" + LABEL_FILENAME)
+    shutil.copy(OUTPUT_FILE, destination_file)
+    # Print a message to confirm the copy operation
+    print(f"Copied `{LABEL_FILENAME}` to `{destination_file}`")
 
     print("Done.")
