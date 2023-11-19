@@ -4,11 +4,11 @@ import subprocess
 # Local scripts
 from main import train_or_test
 from config import Configurator
-from utils.misc import start_script
+from utils.misc import start_script, finish_script
 from utils.consts import *
 
 # Use a fixed number of epochs
-NUM_EPOCHS_FIXED = 20
+NUM_EPOCHS_FIXED = 1
 # Define hyperparameter options
 HYPERPARAMS = {
     MODEL_TYPE: [RNN, LSTM, GRU],
@@ -19,8 +19,6 @@ HYPERPARAMS = {
     NUM_LAYERS: [2, 3, 4],
     BATCH_SIZE: [1],
 }
-# Models should be created, not loaded
-LOAD_MODEL_AND_TEST = False
 
 
 def train_and_evaluate(params):
@@ -39,10 +37,12 @@ def train_and_evaluate(params):
     script_start = start_script()
     # Train and evaluate the model based on the provided cfg
     train_or_test(
-        LOAD_MODEL_AND_TEST,
-        script_start,
         cfg,
+        script_start,
+        False,  # Models should be created, not loaded
     )
+    # Print total script runtime
+    finish_script(script_start)
 
 
 def main():

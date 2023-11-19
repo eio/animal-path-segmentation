@@ -157,10 +157,14 @@ def train_model_from_scratch(
     # Print the Best Epoch along with its loss and accuracy
     print_best(completed_epochs, avg_test_losses, test_accuracies)
     # Now reload the trained model and test with the final test set:
-    train_or_test(True, script_start, cfg)
+    train_or_test(
+        cfg,
+        script_start,
+        True,  # Load the trained model
+    )
 
 
-def train_or_test(LOAD_MODEL_AND_TEST, script_start, cfg):
+def train_or_test(cfg, script_start, LOAD_MODEL_FLAG):
     """
     Perform the Training and Testing
     or just the Loading and Testing
@@ -179,7 +183,7 @@ def train_or_test(LOAD_MODEL_AND_TEST, script_start, cfg):
     optimizer = Optimizer(model, cfg)
     scheduler = Scheduler(optimizer, cfg)
     # Perform the Training or Testing
-    if LOAD_MODEL_AND_TEST == True:
+    if LOAD_MODEL_FLAG == True:
         load_model_and_test(
             model,
             optimizer,
@@ -198,7 +202,7 @@ def train_or_test(LOAD_MODEL_AND_TEST, script_start, cfg):
         )
 
 
-def main(LOAD_MODEL_AND_TEST=False):
+def main(LOAD_MODEL_FLAG=False):
     """
     Main function
     """
@@ -208,9 +212,9 @@ def main(LOAD_MODEL_AND_TEST=False):
     cfg = Configurator()
     # Perform the Training and Testing
     train_or_test(
-        LOAD_MODEL_AND_TEST,
-        script_start,
         cfg,
+        script_start,
+        LOAD_MODEL_FLAG,
     )
     # Print total script runtime
     finish_script(script_start)
