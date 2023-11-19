@@ -41,6 +41,7 @@ The training process logic is in `train_and_test/train_process.py`
 
 The testing process logic is in `train_and_test/test_process.py`
 
+Training can also be initiated with `grid_search.py`. This script will step through multiple model configurations, training various models and then comparing their final accuracies. Depending on the number of hyperparameter options specified, this could take a very long time to complete.
 
 ## Testing with a trained model
 
