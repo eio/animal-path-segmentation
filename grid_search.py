@@ -1,4 +1,5 @@
 import torch
+import json
 import subprocess
 
 # Local scripts
@@ -25,7 +26,7 @@ def train_and_evaluate(params):
     """
     Train and evaluate this model configuration
     """
-    print("\n\n\n")
+    print("\n\n")
     print("________________________________________________")
     print("________________________________________________")
     print("          <> GRID SEARCH ITERATION <>           ")
@@ -75,10 +76,9 @@ def main():
 
 
 if __name__ == "__main__":
-    print("\nPerforming a grid search through...")
-    print("...the hyperspace of possible model configurations...")
-    print("...according to the options defined in `grid_search.py`...")
-    print("\nThis will take awhile.\n")
+    print("\nEvaluating all possible model configurations, given:\n")
+    print(json.dumps(HYPERPARAMS, indent=2))
+    print("\nThis might take awhile.\n")
     # Perform the grid search
     main()
     # Review the contents of the `output/` directory
